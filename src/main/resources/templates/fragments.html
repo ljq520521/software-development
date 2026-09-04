@@ -1,0 +1,130 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:fragment="head">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title th:text="${title}">WEMOVE SPORTS</title>
+    <meta name="description" th:content="${description}" />
+    <meta name="theme-color" content="#142a4f" />
+    <link rel="icon" href="/assets/favicon.svg" />
+    <link rel="stylesheet" href="/assets/site.css" />
+    <script src="/assets/site.js" defer></script>
+  </head>
+  <body>
+    <header th:fragment="header">
+      <div class="announcement">
+        A little movement. A world of possibility.
+        <a href="/play">Discover ways to play <span>↗</span></a>
+      </div>
+      <div class="nav-wrap">
+        <a class="brand" href="/" aria-label="WEMOVE SPORTS homepage"
+          >WE<span>MOVE</span><small>SPORTS</small></a
+        ><button
+          class="menu-button"
+          aria-expanded="false"
+          aria-controls="navigation"
+        >
+          Menu ☰
+        </button>
+        <nav id="navigation" aria-label="Main navigation">
+          <a href="/products" th:classappend="${current=='products'}?'active'"
+            >Products</a
+          ><a href="/play" th:classappend="${current=='play'}?'active'"
+            >Play & learn</a
+          ><a href="/about" th:classappend="${current=='about'}?'active'"
+            >Our story</a
+          ><a href="/support" th:classappend="${current=='support'}?'active'"
+            >Support</a
+          >
+        </nav>
+        <a class="nav-cta" href="/dealers/apply"
+          >Become a partner <span>↗</span></a
+        >
+      </div>
+    </header>
+    <footer th:fragment="footer">
+      <div class="footer-main">
+        <div>
+          <a class="brand light" href="/"
+            >WE<span>MOVE</span><small>SPORTS</small></a
+          >
+          <p>More movement.<br />More moments together.</p>
+        </div>
+        <div>
+          <h3>Discover</h3>
+          <a href="/products">Our products</a><a href="/play">Play & learn</a
+          ><a href="/about">Our story</a>
+        </div>
+        <div>
+          <h3>We're here for you</h3>
+          <a href="/support">Help & FAQs</a
+          ><a href="/quality-safety">Quality & safety</a
+          ><a href="/contact">Contact us</a>
+        </div>
+        <div>
+          <h3>Let's work together</h3>
+          <a href="/dealers/apply">Become a partner ↗</a
+          ><a
+            th:href="'mailto:'+${site.contact_email}"
+            th:text="${site.contact_email}"
+          ></a
+          ><a href="/admin">管理后台 ↗</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span
+          >© 2026 <span th:text="${site.brand_name}">WEMOVE SPORTS</span></span
+        ><span><a href="/privacy">Privacy</a><a href="/terms">Terms</a></span>
+      </div>
+      <p class="sample-note">
+        Demonstration catalog. Activity photography is illustrative; product
+        details require confirmation.
+      </p>
+    </footer>
+    <article th:fragment="productCard(p)" class="product-card">
+      <a class="card-image" th:href="@{/products/{slug}(slug=${p.slug})}"
+        ><img
+          th:src="${p.cover.url}"
+          th:alt="${p.cover.alt}"
+          loading="lazy"
+          width="640"
+          height="480"
+        /><span class="tag">SAMPLE COLLECTION</span
+        ><span class="card-arrow" aria-hidden="true">↗</span></a
+      >
+      <div class="card-meta">
+        <span th:text="${p.category.name}"></span
+        ><span th:text="'Ages '+${p.age_min}+'–'+${p.age_max}"></span>
+      </div>
+      <h3>
+        <a
+          th:href="@{/products/{slug}(slug=${p.slug})}"
+          th:text="${p.name}"
+        ></a>
+      </h3>
+      <p th:text="${p.short_description}"></p>
+    </article>
+    <div
+      th:fragment="pagination(result)"
+      class="pagination"
+      th:if="${result.total_pages > 1}"
+    >
+      <button
+        type="button"
+        data-page-step="-1"
+        th:disabled="${result.page == 1}"
+      >
+        ← Previous</button
+      ><span
+        th:text="'Page '+${result.page}+' of '+${result.total_pages}"
+      ></span
+      ><button
+        type="button"
+        data-page-step="1"
+        th:disabled="${result.page >= result.total_pages}"
+      >
+        Next →
+      </button>
+    </div>
+  </body>
+</html>

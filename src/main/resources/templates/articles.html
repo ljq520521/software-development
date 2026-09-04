@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments :: head}"></head>
+  <body>
+    <header th:replace="~{fragments :: header}"></header>
+    <main class="container section">
+      <div class="page-heading">
+        <span class="eyebrow">PLAY & LEARN</span>
+        <h1>A little inspiration.<br />A lot of possibility.</h1>
+        <p>Simple ideas to make shared play part of your everyday.</p>
+      </div>
+      <div class="article-grid">
+        <a
+          class="article-card"
+          th:each="a:${result.items}"
+          th:href="@{/play/{slug}(slug=${a.slug})}"
+          ><img
+            th:if="${!#lists.isEmpty(a.cover)}"
+            th:src="${a.cover[0].url}"
+            th:alt="${a.cover[0].alt}"
+            width="800"
+            height="460"
+          />
+          <div>
+            <span class="eyebrow">PLAY TOGETHER</span>
+            <h3 th:text="${a.title}"></h3>
+            <p th:text="${a.excerpt}"></p>
+            <span class="text-link">Read the story ↗</span>
+          </div></a
+        >
+      </div>
+      <div class="empty" th:if="${#lists.isEmpty(result.items)}">
+        <h2>More inspiration is on its way.</h2>
+        <a href="/products" class="button primary">Explore products</a>
+      </div>
+      <div th:replace="~{fragments :: pagination(${result})}"></div>
+    </main>
+    <footer th:replace="~{fragments :: footer}"></footer>
+  </body>
+</html>

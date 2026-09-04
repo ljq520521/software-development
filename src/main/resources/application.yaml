@@ -1,0 +1,40 @@
+server:
+  address: ${SERVER_ADDRESS:127.0.0.1}
+  port: ${SERVER_PORT:8080}
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        name: WMSESSION
+        http-only: true
+        same-site: lax
+        secure: ${COOKIE_SECURE:false}
+spring:
+  application:
+    name: wemove-sports
+  datasource:
+    url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/wemove_sports?createDatabaseIfNotExist=true&connectionTimeZone=UTC}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: 8
+  sql:
+    init:
+      mode: always
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+  thymeleaf:
+    cache: false
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+app:
+  admin-email: ${ADMIN_EMAIL:admin@example.com}
+  admin-password: ${ADMIN_PASSWORD:}
+  upload-dir: ${UPLOAD_DIR:./data/uploads}
+logging:
+  level:
+    root: INFO

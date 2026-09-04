@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments :: head}"></head>
+  <body>
+    <header th:replace="~{fragments :: header}"></header>
+    <main class="container">
+      <div class="breadcrumb">
+        <a href="/">Home</a><span>/</span><a href="/products">Products</a
+        ><span>/</span><span th:text="${product.name}"></span>
+      </div>
+      <div class="detail-grid">
+        <div>
+          <img
+            class="product-photo"
+            id="product-photo"
+            th:src="${product.images[0].url}"
+            th:alt="${product.images[0].alt}"
+            width="750"
+            height="680"
+          />
+          <div class="thumbs" th:if="${#lists.size(product.images)>1}">
+            <button
+              th:each="im:${product.images}"
+              th:data-image-src="${im.url}"
+              type="button"
+              aria-label="View product image"
+            >
+              <img
+                th:src="${im.url}"
+                th:alt="${im.alt}"
+                width="75"
+                height="65"
+              />
+            </button>
+          </div>
+          <p
+            class="image-caption"
+            th:if="${#strings.startsWith(product.sku,'DEMO-')}"
+          >
+            Illustrative activity photography · demonstration product record
+          </p>
+        </div>
+        <div class="detail-copy">
+          <span class="eyebrow" th:text="${product.category.name}"></span>
+          <h1 th:text="${product.name}"></h1>
+          <p th:text="${product.short_description}"></p>
+          <div class="detail-tags">
+            <span
+              th:text="'Ages '+${product.age_min}+'–'+${product.age_max}"
+            ></span
+            ><span
+              th:each="environment:${product.environments}"
+              th:text="${environment}"
+            ></span>
+          </div>
+          <ul class="feature-list">
+            <li th:each="feature:${product.features}" th:text="${feature}"></li>
+          </ul>
+          <a
+            class="button primary"
+            th:href="@{/contact(product_id=${product.id})}"
+            >Contact about this product ↗</a
+          >
+          <p class="image-caption" th:text="'SKU: '+${product.sku}"></p>
+          <a class="text-link" href="/quality-safety"
+            >Quality & safety information ↗</a
+          >
+        </div>
+      </div>
+      <section class="detail-sections">
+        <div
+          class="prose"
+          th:utext="${@markdown.render(product.description_markdown)}"
+        ></div>
+        <div>
+          <h2>The details</h2>
+          <table class="spec-table">
+            <tbody>
+              <tr th:each="spec:${product.specifications}">
+                <th scope="row" th:text="${spec.name}"></th>
+                <td th:text="${spec.value}"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+    <footer th:replace="~{fragments :: footer}"></footer>
+  </body>
+</html>

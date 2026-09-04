@@ -1,0 +1,61 @@
+name: wemove-sports
+
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: wemove_sports
+      MYSQL_USER: wemove
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?请先执行 ./docker.sh init}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?请先执行 ./docker.sh init}
+      TZ: UTC
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          MYSQL_PWD="$${MYSQL_PASSWORD}"
+          mysql --protocol=TCP --host=127.0.0.1 --user="$${MYSQL_USER}"
+          --database="$${MYSQL_DATABASE}" --execute='SELECT 1' --silent >/dev/null
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  app:
+    image: wemove-sports:local
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "${APP_BIND_ADDRESS:-127.0.0.1}:${APP_PORT:-8081}:8080"
+    environment:
+      DB_URL: "jdbc:mysql://mysql:3306/wemove_sports?connectionTimeZone=UTC&allowPublicKeyRetrieval=true&sslMode=PREFERRED&characterEncoding=UTF-8"
+      DB_USERNAME: wemove
+      DB_PASSWORD: ${MYSQL_PASSWORD:?请先执行 ./docker.sh init}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?请先执行 ./docker.sh init}
+      SERVER_ADDRESS: 0.0.0.0
+      SERVER_PORT: 8080
+      UPLOAD_DIR: /app/data/uploads
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      SERVER_FORWARD_HEADERS_STRATEGY: ${FORWARD_HEADERS_STRATEGY:-none}
+      SPRING_THYMELEAF_CACHE: "true"
+      TZ: UTC
+    volumes:
+      - uploads_data:/app/data/uploads
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    stop_grace_period: 30s
+
+volumes:
+  mysql_data:
+  uploads_data:

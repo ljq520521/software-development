@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments :: head}"></head>
+  <body>
+    <header th:replace="~{fragments :: header}"></header>
+    <main class="error-page">
+      <span class="eyebrow">LET'S GET YOU BACK ON TRACK</span>
+      <h1 th:text="${status}"></h1>
+      <p th:text="${errorMessage}"></p>
+      <a href="/" class="button primary">Back to home ↗</a
+      ><a href="/products" class="button outline">Explore products</a>
+    </main>
+    <footer th:replace="~{fragments :: footer}"></footer>
+  </body>
+</html>

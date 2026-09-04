@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments :: head}"></head>
+  <body class="admin-body">
+    <link rel="stylesheet" href="/assets/admin.css" />
+    <div id="admin-root">
+      <div class="admin-loading">正在加载管理后台…</div>
+    </div>
+    <dialog id="editor-dialog" aria-labelledby="editor-title"></dialog>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <script src="/assets/admin.js" defer></script>
+  </body>
+</html>

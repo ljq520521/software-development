@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments :: head}"></head>
+  <body>
+    <header th:replace="~{fragments :: header}"></header>
+    <main class="reading">
+      <div class="page-heading">
+        <span
+          class="eyebrow"
+          th:text="${article.type=='article'?'PLAY & LEARN':'WEMOVE SPORTS'}"
+        ></span>
+        <h1 th:text="${article.title}"></h1>
+        <p th:text="${article.excerpt}"></p>
+      </div>
+      <img
+        th:if="${!#lists.isEmpty(article.cover)}"
+        th:src="${article.cover[0].url}"
+        th:alt="${article.cover[0].alt}"
+        width="820"
+        height="460"
+      />
+      <div
+        class="prose"
+        th:utext="${@markdown.render(article.body_markdown)}"
+      ></div>
+      <div class="section-heading section">
+        <a class="button outline" href="/products">Explore our products ↗</a
+        ><a class="text-link" href="/contact">Talk to our team ↗</a>
+      </div>
+    </main>
+    <footer th:replace="~{fragments :: footer}"></footer>
+  </body>
+</html>

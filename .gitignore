@@ -1,0 +1,22 @@
+# 本机凭据（只提交示例配置）
+.env
+.env.*
+!.env.example
+!.env.docker.example
+
+# 构建、运行数据和备份
+target/
+data/
+backups/
+*.log
+.mvn/apache-maven-*/
+.mvn/*.gz
+.mvn/*.sha512
+
+# 编辑器和系统文件
+.DS_Store
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr

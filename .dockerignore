@@ -1,0 +1,9 @@
+# 只允许构建需要的源码进入上下文，凭据、上传数据和本机产物不会进入镜像。
+**
+!Dockerfile
+!pom.xml
+!.mvn/
+!.mvn/settings.xml
+!src/
+!src/**
+**/.DS_Store

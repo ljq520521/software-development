@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments :: head}"></head>
+  <body>
+    <header th:replace="~{fragments :: header}"></header>
+    <main class="container">
+      <div class="page-heading">
+        <span class="eyebrow">HERE TO HELP</span>
+        <h1 th:text="${support.title}"></h1>
+        <p th:text="${support.excerpt}"></p>
+      </div>
+      <div
+        class="prose support-intro"
+        th:utext="${@markdown.render(support.body_markdown)}"
+      ></div>
+      <div class="support-layout">
+        <div>
+          <form action="/support/faq" class="field">
+            <label for="faq-search">Search frequently asked questions</label
+            ><input
+              id="faq-search"
+              name="q"
+              type="search"
+              placeholder="Try “product”, “partner” or “safety”"
+            /><button class="button primary" type="submit">
+              Find an answer
+            </button>
+          </form>
+          <div class="faq-list">
+            <details th:each="faq:${result.items}">
+              <summary th:text="${faq.question}"></summary>
+              <p th:text="${faq.answer}"></p>
+            </details>
+          </div>
+          <div class="empty" th:if="${#lists.isEmpty(result.items)}">
+            <p>No matching answers. Try a different search.</p>
+            <a href="/support" class="text-link">Show all questions</a>
+          </div>
+          <div th:replace="~{fragments :: pagination(${result})}"></div>
+        </div>
+        <aside class="support-card">
+          <span class="eyebrow">LET'S TALK</span>
+          <h2>Still looking<br />for an answer?</h2>
+          <p>
+            Send us your question. We're happy to point you in the right
+            direction.
+          </p>
+          <a href="/contact" class="button primary">Contact our team ↗</a>
+        </aside>
+      </div>
+    </main>
+    <footer th:replace="~{fragments :: footer}"></footer>
+  </body>
+</html>

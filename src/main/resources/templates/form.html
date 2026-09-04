@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments :: head}"></head>
+  <body>
+    <header th:replace="~{fragments :: header}"></header>
+    <main class="container form-layout">
+      <div class="form-intro">
+        <span
+          class="eyebrow"
+          th:text="${dealer?'GROW WITH US':'GOOD CONVERSATIONS START HERE'}"
+        ></span>
+        <h1
+          th:text="${dealer?'More play. More possibility.':'Let’s talk.'}"
+        ></h1>
+        <p
+          th:text="${dealer?'Help bring active play to more families. Tell us about your business and what you have in mind.':'Have a product question or an idea to share? We’d love to hear from you.'}"
+        ></p>
+        <a
+          class="text-link"
+          th:href="'mailto:'+${site.contact_email}"
+          th:text="${site.contact_email}"
+        ></a
+        ><img
+          src="/assets/hero-outdoor.jpg"
+          alt="Children enjoying outdoor group play"
+          width="440"
+          height="400"
+          loading="lazy"
+        />
+      </div>
+      <div>
+        <div
+          id="form-message"
+          class="form-message"
+          tabindex="-1"
+          role="status"
+          aria-live="polite"
+        ></div>
+        <form th:data-lead-form="${dealer?'dealer':'contact'}">
+          <p class="required-hint">
+            Fields marked * are required. Please provide adult contact
+            information.
+          </p>
+          <div class="form-grid">
+            <label class="field span-two" th:if="${dealer}"
+              ><span>Company name *</span
+              ><input
+                name="company_name"
+                required
+                maxlength="200"
+                autocomplete="organization" /></label
+            ><label class="field"
+              ><span>Your name *</span
+              ><input
+                th:name="${dealer?'contact_name':'name'}"
+                required
+                maxlength="100"
+                autocomplete="name" /></label
+            ><label class="field"
+              ><span>Email address *</span
+              ><input
+                name="email"
+                type="email"
+                required
+                maxlength="254"
+                autocomplete="email" /></label
+            ><label class="field"
+              ><span>Country / region *</span
+              ><select name="country" required>
+                <option value="">Select country</option>
+                <option
+                  th:each="country:${countries}"
+                  th:value="${country.code}"
+                  th:text="${country.name}"
+                ></option></select></label
+            ><label class="field" th:if="${dealer}"
+              ><span>Phone number *</span
+              ><input
+                name="phone"
+                type="tel"
+                required
+                minlength="3"
+                maxlength="30"
+                autocomplete="tel" /></label
+            ><label class="field" th:if="${dealer}"
+              ><span>Business type *</span
+              ><select name="business_type" required>
+                <option value="retailer">Retailer</option>
+                <option value="wholesaler">Wholesaler</option>
+                <option value="distributor">Distributor</option>
+                <option value="institution">School / institution</option>
+                <option value="other">Other</option>
+              </select></label
+            ><label class="field" th:if="${dealer}"
+              ><span>Website</span
+              ><input
+                name="website"
+                type="url"
+                maxlength="500"
+                placeholder="https://" /></label
+            ><label class="field" th:unless="${dealer}"
+              ><span>What can we help with? *</span
+              ><select name="type" required>
+                <option value="general">General inquiry</option>
+                <option
+                  value="product_question"
+                  th:selected="${!#strings.isEmpty(productId)}"
+                >
+                  Product question
+                </option>
+                <option value="dealer_inquiry">Partnership inquiry</option>
+                <option value="media_business">Media / business</option>
+              </select></label
+            ><label class="field span-two" th:unless="${dealer}"
+              ><span>Product</span
+              ><select
+                name="product_id"
+                th:required="${!#strings.isEmpty(productId)}"
+              >
+                <option value="">Select a product (optional)</option>
+                <option
+                  th:each="p:${products}"
+                  th:value="${p.id}"
+                  th:text="${p.name}"
+                  th:selected="${productId==p.id}"
+                ></option></select></label
+            ><label class="field span-two" th:unless="${dealer}"
+              ><span>Subject *</span
+              ><input name="subject" required maxlength="200"
+            /></label>
+            <fieldset class="span-two interest-field" th:if="${dealer}">
+              <legend>Products of interest (optional)</legend>
+              <label class="consent" th:each="p:${products}"
+                ><input
+                  type="checkbox"
+                  name="interested_product_ids"
+                  th:value="${p.id}" /><span th:text="${p.name}"></span
+              ></label>
+            </fieldset>
+            <label class="field span-two"
+              ><span
+                th:text="${dealer?'Tell us about your business *':'Your message *'}"
+              ></span
+              ><textarea
+                name="message"
+                required
+                minlength="10"
+                maxlength="5000"
+                rows="6"
+                placeholder="How can we help?"
+              ></textarea></label
+            ><label class="consent span-two"
+              ><input name="privacy_consent" type="checkbox" required /><span
+                >I have read the
+                <a href="/privacy" target="_blank" rel="noopener"
+                  >privacy information</a
+                >
+                and agree to the use of my details to handle this inquiry.
+                *</span
+              ></label
+            ><input
+              name="privacy_version"
+              type="hidden"
+              th:value="${site.privacy_version}"
+            /><button
+              type="submit"
+              class="button primary span-two"
+              th:text="${dealer?'Send partnership application ↗':'Send your message ↗'}"
+            ></button>
+          </div>
+        </form>
+      </div>
+    </main>
+    <footer th:replace="~{fragments :: footer}"></footer>
+  </body>
+</html>

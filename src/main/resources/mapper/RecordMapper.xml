@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="hdu.ljq.persistence.RecordMapper">
+  <!-- table/where/order and row keys originate only in the repository allowlist. Values are bound. -->
+  <select id="select" resultType="map">SELECT * FROM ${table} WHERE ${where} ORDER BY ${order} LIMIT #{limit} OFFSET #{offset}</select>
+  <select id="count" resultType="long">SELECT COUNT(*) FROM ${table} WHERE ${where}</select>
+  <select id="find" resultType="map">SELECT * FROM ${table} WHERE id=#{id}</select>
+  <insert id="insert" useGeneratedKeys="true" keyProperty="row.id">
+    INSERT INTO ${table} (<foreach collection="row" index="key" item="value" separator=",">`${key}`</foreach>) VALUES (<foreach collection="row" item="value" separator=",">#{value}</foreach>)
+  </insert>
+  <update id="update">
+    UPDATE ${table} SET <foreach collection="row" index="key" item="value" separator=",">`${key}`=#{value}</foreach>, version=version+1,updated_at=UTC_TIMESTAMP(3) WHERE id=#{id} AND version=#{version}
+  </update>
+</mapper>
