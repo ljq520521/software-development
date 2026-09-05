@@ -2,17 +2,13 @@
   "openapi": "3.0.3",
   "info": {
     "title": "WEMOVE SPORTS 首版 API",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "首版已实现；启动和实现说明见 Java 项目 README。Java 21 + Spring Boot 3.5.7 + MyBatis Starter 3.0.3 + MySQL 8.4。仅品牌官网、产品、内容、合作线索与单管理员后台。所有示例为虚构数据。权限、状态机、发布校验和事务约束详见同目录 API接口文档.md。JSON 使用 snake_case，ID 为字符串。"
   },
   "servers": [
     {
-      "url": "http://127.0.0.1:8081/api/v1",
-      "description": "Docker Compose 默认服务，可由 APP_PORT 调整"
-    },
-    {
-      "url": "http://127.0.0.1:8080/api/v1",
-      "description": "本机 run.sh 开发服务"
+      "url": "http://localhost:8080/api/v1",
+      "description": "本机开发服务，运行 run.sh 后访问"
     }
   ],
   "tags": [
@@ -48,6 +44,12 @@
     },
     {
       "name": "后台审计"
+    },
+    {
+      "name": "公开订单"
+    },
+    {
+      "name": "后台订单"
     }
   ],
   "paths": {
@@ -8338,6 +8340,572 @@
           }
         ]
       }
+    },
+    "/orders": {
+      "post": {
+        "operationId": "createOrder",
+        "tags": [
+          "公开订单"
+        ],
+        "summary": "创建待支付订单",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "OK"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Order"
+                    },
+                    "request_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data",
+                    "request_id"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "统一错误响应",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{number}": {
+      "get": {
+        "operationId": "getOrder",
+        "tags": [
+          "公开订单"
+        ],
+        "summary": "使用私有令牌查询订单",
+        "security": [],
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "access_token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "OK"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Order"
+                    },
+                    "request_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data",
+                    "request_id"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "统一错误响应",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{number}/payments": {
+      "post": {
+        "operationId": "payOrder",
+        "tags": [
+          "公开订单"
+        ],
+        "summary": "完成演示支付",
+        "description": "不会采集真实支付凭据或产生真实扣款。",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "OK"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Order"
+                    },
+                    "request_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data",
+                    "request_id"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "统一错误响应",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/orders": {
+      "get": {
+        "operationId": "listAdminOrders",
+        "tags": [
+          "后台订单"
+        ],
+        "summary": "查询订单",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "OK"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/PageOrder"
+                    },
+                    "request_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data",
+                    "request_id"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "统一错误响应",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/orders/{id}": {
+      "get": {
+        "operationId": "getAdminOrder",
+        "tags": [
+          "后台订单"
+        ],
+        "summary": "订单详情",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "OK"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Order"
+                    },
+                    "request_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data",
+                    "request_id"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "统一错误响应",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateAdminOrder",
+        "tags": [
+          "后台订单"
+        ],
+        "summary": "更新订单状态或演示退款",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "OK"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Order"
+                    },
+                    "request_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data",
+                    "request_id"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "统一错误响应",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/payments": {
+      "get": {
+        "operationId": "listAdminPayments",
+        "tags": [
+          "后台订单"
+        ],
+        "summary": "查询支付流水",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "OK"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/PagePayment"
+                    },
+                    "request_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data",
+                    "request_id"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "统一错误响应",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -8828,6 +9396,20 @@
           },
           "seo": {
             "$ref": "#/components/schemas/Seo"
+          },
+          "price_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 99999999,
+            "description": "商品单价，单位为分",
+            "example": 12900
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "CNY"
+            ],
+            "description": "结算币种，当前仅支持人民币"
           }
         },
         "description": "全部字段需提供；草稿的描述可为空、特点/规格/图片可用空数组。创建状态固定 draft。",
@@ -8845,7 +9427,9 @@
           "specifications",
           "images",
           "featured",
-          "seo"
+          "seo",
+          "price_cents",
+          "currency"
         ]
       },
       "ProductPatch": {
@@ -8969,6 +9553,20 @@
               "archived"
             ],
             "description": ""
+          },
+          "price_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 99999999,
+            "description": "商品单价，单位为分",
+            "example": 12900
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "CNY"
+            ],
+            "description": "结算币种，当前仅支持人民币"
           }
         },
         "description": "部分更新；合并后按状态重新执行完整性校验。",
@@ -9052,6 +9650,20 @@
           "featured": {
             "type": "boolean",
             "description": "主推标记"
+          },
+          "price_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 99999999,
+            "description": "商品单价，单位为分",
+            "example": 12900
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "CNY"
+            ],
+            "description": "结算币种，当前仅支持人民币"
           }
         },
         "description": "",
@@ -9066,7 +9678,9 @@
           "age_max",
           "environments",
           "cover",
-          "featured"
+          "featured",
+          "price_cents",
+          "currency"
         ]
       },
       "ProductDetail": {
@@ -9191,9 +9805,23 @@
             "format": "date-time",
             "description": "UTC 时间",
             "example": "2026-09-04T04:00:00Z"
+          },
+          "price_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 99999999,
+            "description": "商品单价，单位为分",
+            "example": 12900
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "CNY"
+            ],
+            "description": "结算币种，当前仅支持人民币"
           }
         },
-        "description": "仅 active 且分类启用的产品可被公开获取；不含价格、库存或后台备注。",
+        "description": "仅 active 且分类启用的产品可被公开获取；包含当前售价。",
         "required": [
           "name",
           "slug",
@@ -9211,7 +9839,9 @@
           "seo",
           "id",
           "category",
-          "updated_at"
+          "updated_at",
+          "price_cents",
+          "currency"
         ]
       },
       "ProductAdmin": {
@@ -9362,6 +9992,20 @@
             "description": "UTC 时间",
             "example": "2026-09-04T04:00:00Z",
             "nullable": true
+          },
+          "price_cents": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 99999999,
+            "description": "商品单价，单位为分",
+            "example": 12900
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "CNY"
+            ],
+            "description": "结算币种，当前仅支持人民币"
           }
         },
         "description": "后台完整产品数据；从未发布时 first_published_at 为 null。",
@@ -9385,7 +10029,9 @@
           "featured",
           "seo",
           "status",
-          "first_published_at"
+          "first_published_at",
+          "price_cents",
+          "currency"
         ]
       },
       "ContentCreate": {
@@ -12253,6 +12899,382 @@
           "total",
           "total_pages"
         ]
+      },
+      "ShippingAddress": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "address_line1": {
+            "type": "string"
+          },
+          "address_line2": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "postal_code": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "address_line1",
+          "address_line2",
+          "city",
+          "region",
+          "postal_code",
+          "country"
+        ]
+      },
+      "OrderCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          },
+          "customer_name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "phone": {
+            "type": "string",
+            "minLength": 6,
+            "maxLength": 40
+          },
+          "address_line1": {
+            "type": "string"
+          },
+          "address_line2": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "postal_code": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "privacy_version": {
+            "type": "string"
+          },
+          "privacy_consent": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "product_id",
+          "quantity",
+          "customer_name",
+          "email",
+          "phone",
+          "address_line1",
+          "address_line2",
+          "city",
+          "region",
+          "postal_code",
+          "country",
+          "privacy_consent",
+          "privacy_version"
+        ]
+      },
+      "PaymentCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "demo_card",
+              "demo_alipay",
+              "demo_wechat"
+            ]
+          }
+        },
+        "required": [
+          "access_token",
+          "method"
+        ]
+      },
+      "OrderPatch": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending_payment",
+              "paid",
+              "processing",
+              "shipped",
+              "completed",
+              "cancelled",
+              "refunded"
+            ]
+          },
+          "internal_note": {
+            "type": "string",
+            "maxLength": 5000
+          }
+        },
+        "required": [
+          "version",
+          "status"
+        ]
+      },
+      "OrderItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "product_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "product_name": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "unit_price_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "金额，单位为分"
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "line_total_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "金额，单位为分"
+          }
+        }
+      },
+      "PaymentRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "payment_number": {
+            "type": "string"
+          },
+          "order_number": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "amount_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "金额，单位为分"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "CNY"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "succeeded",
+              "refunded"
+            ]
+          },
+          "provider_reference": {
+            "type": "string"
+          },
+          "paid_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "order_number": {
+            "type": "string"
+          },
+          "access_token": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "customer_name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "shipping_address": {
+            "$ref": "#/components/schemas/ShippingAddress"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "CNY"
+            ]
+          },
+          "subtotal_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "金额，单位为分"
+          },
+          "shipping_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "金额，单位为分"
+          },
+          "total_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "金额，单位为分"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending_payment",
+              "paid",
+              "processing",
+              "shipped",
+              "completed",
+              "cancelled",
+              "refunded"
+            ]
+          },
+          "payment_status": {
+            "type": "string",
+            "enum": [
+              "unpaid",
+              "paid",
+              "refunded"
+            ]
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "paid_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItem"
+            }
+          },
+          "payments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentRecord"
+            }
+          },
+          "internal_note": {
+            "type": "string"
+          }
+        }
+      },
+      "PageOrder": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Order"
+            }
+          },
+          "page": {
+            "type": "integer"
+          },
+          "page_size": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          }
+        }
+      },
+      "PagePayment": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentRecord"
+            }
+          },
+          "page": {
+            "type": "integer"
+          },
+          "page_size": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          }
+        }
       }
     }
   }

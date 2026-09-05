@@ -298,6 +298,68 @@ class BuildingBlockWebApplicationTests {
   }
 
   @Test
+  void orderCheckoutPaymentAndAdminVisibility() throws Exception {
+    ObjectNode product = repo.all(EntityType.PRODUCT).stream()
+        .filter(p -> p.path("status").asText().equals("active"))
+        .findFirst()
+        .orElseThrow();
+    ObjectNode order =
+        json.createObjectNode()
+            .put("product_id", product.path("id").asText())
+            .put("quantity", 2)
+            .put("customer_name", "Order Integration Buyer")
+            .put("email", "order-integration@example.com")
+            .put("phone", "13800138000")
+            .put("address_line1", "1 Integration Road")
+            .put("address_line2", "")
+            .put("city", "Hangzhou")
+            .put("region", "Zhejiang")
+            .put("postal_code", "310000")
+            .put("country", "CN")
+            .put("privacy_consent", true)
+            .put("privacy_version", repo.find(EntityType.SITE, "1").path("privacy_version").asText());
+    JsonNode created = form("/api/v1/orders", order, UUID.randomUUID().toString(), 201).path("data");
+    String number = created.path("order_number").asText();
+    String token = created.path("access_token").asText();
+    assertEquals("pending_payment", created.path("status").asText());
+    assertEquals(product.path("price_cents").asLong() * 2, created.path("total_cents").asLong());
+    mvc.perform(get("/orders/" + number).param("token", token)).andExpect(status().isOk());
+    mvc.perform(get("/api/v1/orders/" + number).param("access_token", UUID.randomUUID().toString()))
+        .andExpect(status().isNotFound());
+    JsonNode paid =
+        write(
+                "POST",
+                "/api/v1/orders/" + number + "/payments",
+                json.createObjectNode().put("access_token", token).put("method", "demo_card"),
+                200)
+            .path("data");
+    assertEquals("paid", paid.path("status").asText());
+    assertEquals(1, paid.path("payments").size());
+    mvc.perform(get("/api/v1/admin/orders").session(session).param("q", number))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.total").value(1));
+    String orderId = paid.path("id").asText();
+    JsonNode processing =
+        write(
+                "PATCH",
+                "/api/v1/admin/orders/" + orderId,
+                json.createObjectNode()
+                    .put("version", paid.path("version").asInt())
+                    .put("status", "processing")
+                    .put("internal_note", "Integration test processing"),
+                200)
+            .path("data");
+    assertEquals("processing", processing.path("status").asText());
+    mvc.perform(
+            get("/api/v1/admin/audit-logs")
+                .session(session)
+                .param("entity_type", "order")
+                .param("entity_id", orderId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.total").value(1));
+  }
+
+  @Test
   @Transactional(propagation = org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
   void concurrentRetriesCreateExactlyOneSubmission() throws Exception {
     String key = UUID.randomUUID().toString();

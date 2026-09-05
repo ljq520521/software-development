@@ -17,11 +17,13 @@ public class ApiController {
   private final CatalogService c;
   private final LeadService leads;
   private final MediaService media;
+  private final CommerceService commerce;
 
-  public ApiController(CatalogService c, LeadService l, MediaService m) {
+  public ApiController(CatalogService c, LeadService l, MediaService m, CommerceService commerce) {
     this.c = c;
     leads = l;
     media = m;
+    this.commerce = commerce;
   }
 
   private Object ok(Object d, HttpServletRequest r) {
@@ -78,31 +80,21 @@ public class ApiController {
 
   @GetMapping("/admin/dashboard")
   public Object dashboard(HttpServletRequest r) {
-    return ok(
-        Map.of(
-            "active_products",
-            c.repository().list(EntityType.PRODUCT, Map.of("status", "active"), false).total(),
-            "published_articles",
-            c.repository()
-                .list(EntityType.CONTENT, Map.of("type", "article", "status", "published"), false)
-                .total(),
-            "new_inquiries",
-            c.repository().list(EntityType.INQUIRY, Map.of("status", "new"), false).total(),
-            "open_dealer_applications",
-            c.repository()
-                    .list(EntityType.APPLICATION, Map.of("status", "submitted"), false)
-                    .total()
-                + c.repository()
-                    .list(EntityType.APPLICATION, Map.of("status", "under_review"), false)
-                    .total(),
-            "generated_at",
-            Instant.now().toString()),
-        r);
+    Map<String, Object> data = new LinkedHashMap<>();
+    data.put("active_products", c.repository().list(EntityType.PRODUCT, Map.of("status", "active"), false).total());
+    data.put("published_articles", c.repository().list(EntityType.CONTENT, Map.of("type", "article", "status", "published"), false).total());
+    data.put("new_inquiries", c.repository().list(EntityType.INQUIRY, Map.of("status", "new"), false).total());
+    data.put("open_dealer_applications", c.repository().list(EntityType.APPLICATION, Map.of("status", "submitted"), false).total() + c.repository().list(EntityType.APPLICATION, Map.of("status", "under_review"), false).total());
+    data.putAll(commerce.metrics());
+    data.put("generated_at", Instant.now().toString());
+    return ok(data, r);
   }
 
   @GetMapping("/admin/{resource}")
   public Object adminList(
       @PathVariable String resource, @RequestParam Map<String, String> q, HttpServletRequest r) {
+    if (resource.equals("orders") || resource.equals("payments"))
+      return ok(commerce.adminList(resource.equals("payments"), q), r);
     EntityType t = type(resource);
     return ok(
         t == EntityType.HOME || t == EntityType.SITE ? c.admin(t, "1") : c.list(t, q, true), r);
@@ -111,6 +103,7 @@ public class ApiController {
   @GetMapping("/admin/{resource}/{id}")
   public Object adminOne(
       @PathVariable String resource, @PathVariable String id, HttpServletRequest r) {
+    if (resource.equals("orders")) return ok(commerce.adminOrder(id), r);
     EntityType t = type(resource);
     if (!Set.of(EntityType.PRODUCT, EntityType.CONTENT, EntityType.INQUIRY, EntityType.APPLICATION)
         .contains(t)) throw ApiException.missing();
@@ -133,6 +126,8 @@ public class ApiController {
       @PathVariable String id,
       @RequestBody JsonNode d,
       HttpServletRequest r) {
+    if (resource.equals("orders"))
+      return ok(commerce.updateOrder(id, d, actor(r), ApiResponses.requestId(r)), r);
     EntityType t = type(resource);
     if (!Set.of(
             EntityType.PRODUCT,

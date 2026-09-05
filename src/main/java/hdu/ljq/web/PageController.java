@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 public class PageController {
   private final CatalogService c;
+  private final CommerceService commerce;
 
-  public PageController(CatalogService c) {
+  public PageController(CatalogService c, CommerceService commerce) {
     this.c = c;
+    this.commerce = commerce;
   }
 
   private void base(Model m, String title, String current) {
@@ -51,6 +53,28 @@ public class PageController {
     m.addAttribute("description", p.path("seo").path("description").asText());
     m.addAttribute("product", map(p));
     return "product";
+  }
+
+  @GetMapping("/checkout")
+  public String checkout(@RequestParam String product_id, Model m) {
+    base(m, "Checkout", "products");
+    m.addAttribute("product", commerce.checkoutProduct(product_id));
+    m.addAttribute(
+        "countries",
+        Arrays.stream(Locale.getISOCountries())
+            .map(code -> Map.of("code", code, "name", Locale.of("", code).getDisplayCountry(Locale.ENGLISH)))
+            .sorted(java.util.Comparator.comparing(item -> item.get("name")))
+            .toList());
+    return "checkout";
+  }
+
+  @GetMapping("/orders/{number}")
+  public String order(
+      @PathVariable String number, @RequestParam String token, Model m) {
+    base(m, "Order " + number, "orders");
+    m.addAttribute("order", map(commerce.publicOrder(number, token)));
+    m.addAttribute("accessToken", token);
+    return "order";
   }
 
   @GetMapping("/play")

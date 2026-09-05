@@ -1,17 +1,28 @@
 # WEMOVE SPORTS 网站
 
-基于 Java、Spring Boot、MyBatis 和 MySQL 的品牌网站，包含英文官网、中文管理后台和 REST API。前端使用 Thymeleaf 服务端渲染，页面、CSS、JavaScript 与后端一起打包；无需 npm，也不需要把前端单独部署到 Nginx。
+基于 Java、Spring Boot、MyBatis 和 MySQL 的品牌网站，包含英文官网、订单与演示支付、中文管理后台和 REST API。前端使用 Thymeleaf 服务端渲染，页面、CSS、JavaScript 与后端一起打包；无需 npm，也不需要把前端单独部署到 Nginx。
 
 ## 1. 已实现功能
 
 - 官网：首页、产品搜索与分类/年龄/场景筛选、产品详情、玩法文章、品牌介绍、质量与安全、FAQ。
 - 表单：联系咨询、经销商合作申请，包含字段校验、隐私同意、提交回执、24 小时幂等和重复申请校验。
-- 中文后台：管理员登录、产品/分类/文章/页面/FAQ 管理、首页与站点配置、图片上传、咨询和合作申请处理、操作审计。
+- 中文后台：管理员登录、产品/分类/文章/页面/FAQ 管理、首页与站点配置、图片上传、订单、支付流水、咨询和合作申请处理、操作审计。
+- 订单：产品定价、立即购买、收货信息校验、30 分钟待支付期限、商品与价格快照、私有令牌查询和履约状态流转。
+- 支付：演示银行卡、演示支付宝、演示微信支付、重复支付保护、支付流水查询和演示退款。
 - 权限与数据：BCrypt 密码、Session、CSRF、请求限流、版本冲突保护、事务和 MySQL 持久存储。
 
-初始产品、政策和活动照片均为标注过的演示内容，可通过后台替换。本版处理合作线索，没有支付、订单、自动邮件或经销商账号开通。
+初始产品、政策和活动照片均为标注过的演示内容，可通过后台替换。支付使用本地演示网关，不采集真实支付凭据，也不会产生真实扣款；自动邮件和经销商账号开通仍未实现。
 
-## 2. 技术栈与目录
+## 2. 订单与支付验收
+
+1. 打开任一产品详情，点击 **Buy now**。
+2. 填写收货信息并提交，系统创建待支付订单。
+3. 在订单页选择一种演示支付方式，系统写入支付流水并将订单更新为已支付。
+4. 登录 `/admin`，在“订单管理”中推进处理中、已发货、已完成或演示退款，在“支付流水”中查询支付记录。
+
+订单数据保存在 `customer_order`，商品快照保存在 `order_item`，支付流水保存在 `payment_record`。金额使用整数分保存。订单查询地址包含私有访问令牌；没有令牌时公开接口不返回客户和收货信息。
+
+## 3. 技术栈与目录
 
 | 部分 | 技术 |
 | --- | --- |
@@ -38,7 +49,7 @@
 └── src/
     ├── main/java/hdu/ljq/       # common、config、persistence、service、web
     ├── main/resources/
-    │   ├── schema.sql          # 13 张表的幂等初始化 SQL
+    │   ├── schema.sql          # 16 张表的幂等初始化 SQL
     │   ├── mapper/             # MyBatis SQL
     │   ├── templates/          # 前台、后台 HTML 模板
     │   ├── static/             # CSS、JS、示例图片及 OpenAPI
@@ -46,9 +57,9 @@
     └── test/                   # MySQL 集成测试
 ```
 
-## 3. 使用 Docker 启动（推荐）
+## 4. 使用 Docker 启动（推荐）
 
-### 3.1 环境准备
+### 4.1 环境准备
 
 安装并启动 Docker Desktop；Linux 服务器也可使用 Docker Engine + Docker Compose 插件。需要支持 `docker compose up --wait` 的 Compose v2.20+ 或 v5。Windows 用户可在 WSL2 中运行本项目的 Shell 脚本。
 
@@ -70,7 +81,7 @@ docker compose version
 
 Compose 会先启动 MySQL，等实际数据库查询通过健康检查后再启动 Java。Java 首次启动自动创建表、管理员与演示内容。应用健康检查同时验证数据库连接。
 
-### 3.2 访问地址与登录
+### 4.2 访问地址与登录
 
 | 用途 | 默认地址 |
 | --- | --- |
@@ -88,7 +99,7 @@ Compose 会先启动 MySQL，等实际数据库查询通过健康检查后再启
 浏览器 → 127.0.0.1:8081 → app:8080（页面 + API）→ mysql:3306
 ```
 
-### 3.3 Docker 配置说明
+### 4.3 Docker 配置说明
 
 修改 `.env.docker` 后执行 `./docker.sh up -d --wait` 使容器环境配置生效。
 
@@ -107,7 +118,7 @@ Compose 会先启动 MySQL，等实际数据库查询通过健康检查后再启
 
 容器内部数据库地址固定使用服务名 `mysql`，而不是 `localhost`。应用使用专属用户 `wemove`，只拥有 `wemove_sports` 数据库的权限；root 密码不传给应用容器。`.env.docker`、`.env`、运行数据和构建目录已被 Git 忽略，Docker 构建上下文也只包含必要源码。
 
-## 4. 数据库与图片存储
+## 5. 数据库与图片存储
 
 Docker 模式创建独立 MySQL 容器，库名为 **`wemove_sports`**。它和宿主机原来 `127.0.0.1:3306` 上同名的数据库是两套独立数据；原有表单提交不会自动迁移到 Docker。
 
@@ -126,6 +137,9 @@ Docker 模式创建独立 MySQL 容器，库名为 **`wemove_sports`**。它和�
 | `audit_log` | 管理操作记录 |
 | `idempotency_record` | 表单重试幂等记录 |
 | `app_lock` | 事务中的业务写锁 |
+| `customer_order` | 客户、收货地址、金额及订单状态 |
+| `order_item` | 商品名称、SKU、单价和数量快照 |
+| `payment_record` | 演示支付及退款流水 |
 
 产品图片、封面和意向产品 ID 使用业务表 JSON 列保存关联；引用由 Service 校验。SKU、slug 等字段有唯一约束，产品分类、咨询产品有外键。
 
@@ -157,7 +171,7 @@ ORDER BY id DESC;
 
 数据库建表语句见 [schema.sql](src/main/resources/schema.sql)，使用 `CREATE TABLE IF NOT EXISTS`，已有数据不会被清空；未来表结构变更需要显式 SQL 迁移。
 
-## 5. 日常运维
+## 6. 日常运维
 
 ```bash
 # 查看状态与日志
@@ -192,7 +206,7 @@ mkdir -p backups
 
 请将备份复制到其他磁盘或备份存储。恢复时需停止应用，将 SQL 导入目标数据库，并将图片解压回对应上传卷后再启动。迁移宿主机旧数据时，也需要同时导出旧 MySQL 数据和 `data/uploads`；迁移后的管理员密码以旧数据库为准。请先确认源、目标 MySQL 版本的逻辑导入兼容性，不能直接把宿主机 MySQL 数据目录挂给另一个版本的容器。
 
-## 6. 是否需要 Nginx
+## 7. 是否需要 Nginx
 
 本项目的前端与后端一起运行，Docker Compose 默认不包含 Nginx。本机开发、课程演示只需前面的两个容器。
 
@@ -200,7 +214,7 @@ mkdir -p backups
 
 默认 `robots.txt` 禁止索引，适合示例内容验收；对外发布前应替换示例产品和政策，并调整索引策略。
 
-## 7. 不使用 Docker：本机开发
+## 8. 不使用 Docker：本机开发
 
 需要 JDK 21+ 和已启动的 MySQL。复制 `.env.example` 为 `.env`，填写本机 `DB_URL`、`DB_USERNAME`、`DB_PASSWORD` 与管理员初始配置。不要把 `.env.docker` 复制成 `.env`，两者用途不同。
 
@@ -214,7 +228,7 @@ cp .env.example .env
 
 IDEA 用户以根目录 `pom.xml` 导入，Project SDK 选择 JDK 21+。直接运行 `hdu.ljq.BuildingBlockWebApplication` 时，需要在运行配置中设置与 `.env` 相同的环境变量。命令行启动和 IDEA 启动二选一，避免重复占用同一端口。
 
-## 8. 测试与 JAR 打包
+## 9. 测试与 JAR 打包
 
 ```bash
 # 需要本机 MySQL；测试在独立 wemove_sports_test 数据库执行
@@ -224,7 +238,7 @@ IDEA 用户以根目录 `pom.xml` 导入，Project SDK 选择 JDK 21+。直接�
 ./mvnw -DskipTests package
 ```
 
-测试共 8 项，覆盖登录与权限、CSRF、产品发布与版本冲突、表单幂等与并发重试、合作申请状态、图片校验、内容发布和首页配置。普通业务测试事务回滚，并发测试清理自己的数据；不要将 `TEST_DB_URL` 指向业务数据库。测试账号需具备创建和维护独立测试数据库的权限，Compose 的 `wemove` 用户仅供业务使用。
+测试共 9 项，覆盖登录与权限、CSRF、产品发布与版本冲突、表单幂等与并发重试、合作申请状态、订单创建与私有查询、模拟支付、后台订单处理、图片校验、内容发布和首页配置。普通业务测试事务回滚，并发测试清理自己的数据；不要将 `TEST_DB_URL` 指向业务数据库。测试账号需具备创建和维护独立测试数据库的权限，Compose 的 `wemove` 用户仅供业务使用。
 
 产物为 `target/building-block-web-1.0.0.jar`。本机手动运行 JAR：
 
@@ -235,7 +249,7 @@ set +a
 java -jar target/building-block-web-1.0.0.jar
 ```
 
-## 9. 常见问题
+## 10. 常见问题
 
 | 现象 | 处理方法 |
 | --- | --- |
@@ -249,7 +263,7 @@ java -jar target/building-block-web-1.0.0.jar
 | 登录后写操作报 403 | 检查访问域名/协议与代理头，HTTP 环境不要开启 `COOKIE_SECURE` |
 | 拉取镜像/依赖失败 | 检查 Docker Hub、Maven Central 及软件源网络，恢复后重试构建 |
 
-## 10. 接口与参考资料
+## 11. 接口与参考资料
 
 - [中文接口文档](docs/API接口文档.md)
 - [OpenAPI 定义](docs/openapi.json)（Docker 默认端口 8081，本机开发端口 8080）

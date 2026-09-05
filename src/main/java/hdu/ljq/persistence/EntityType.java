@@ -10,6 +10,8 @@ public enum EntityType {
       "slug:STRING",
       "sku:STRING",
       "category_id:ID",
+      "price_cents:NUMBER",
+      "currency:STRING",
       "short_description:STRING",
       "description_markdown:STRING",
       "age_min:NUMBER",

@@ -11,12 +11,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @Component
+@Order(10)
 public class SeedData implements ApplicationRunner {
   private final CatalogService c;
   private final MediaService media;
@@ -150,6 +152,10 @@ public class SeedData implements ApplicationRunner {
                     "DEMO-" + (100 + i),
                     "category_id",
                     cats.get(category),
+                    "price_cents",
+                    9900 + i * 2000,
+                    "currency",
+                    "CNY",
                     "short_description",
                     category == 0
                         ? "A little aim. A lot of shared fun."

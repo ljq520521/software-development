@@ -122,6 +122,94 @@ if (form) {
   });
 }
 
+const commerceForm = document.querySelector("[data-commerce-form]");
+const commerceMessage = document.querySelector("#commerce-message");
+const showCommerceMessage = (message, success = false) => {
+  if (!commerceMessage) return;
+  commerceMessage.textContent = message;
+  commerceMessage.className = "form-message visible" + (success ? " success" : "");
+  commerceMessage.focus();
+};
+const commerceToken = async () => {
+  const response = await fetch("/api/v1/auth/csrf");
+  const result = await response.json();
+  if (!response.ok) throw Error(result.message || "Unable to start the request.");
+  return result.data.csrf_token;
+};
+const commerceError = (result) => {
+  const details = Object.entries(result.field_errors || {}).map(
+    ([field, messages]) => `${field.replaceAll("_", " ")}: ${messages.join(" ")}`,
+  );
+  return details.length ? details.join("\n") : result.message || "The request could not be completed.";
+};
+if (commerceForm) {
+  const orderKey = crypto.randomUUID();
+  commerceForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const button = commerceForm.querySelector("[type=submit]");
+    const original = button.textContent;
+    button.disabled = true;
+    button.textContent = "Creating order…";
+    try {
+      const values = Object.fromEntries(new FormData(commerceForm));
+      values.quantity = Number(values.quantity);
+      values.privacy_consent = commerceForm.elements.privacy_consent.checked;
+      const response = await fetch("/api/v1/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": await commerceToken(),
+          "Idempotency-Key": orderKey,
+        },
+        body: JSON.stringify(values),
+      });
+      const result = await response.json();
+      if (!response.ok) throw Error(commerceError(result));
+      const order = result.data;
+      location.assign(
+        `/orders/${encodeURIComponent(order.order_number)}?token=${encodeURIComponent(order.access_token)}`,
+      );
+    } catch (error) {
+      showCommerceMessage(error.message || "Unable to create the order.");
+      button.disabled = false;
+      button.textContent = original;
+    }
+  });
+}
+
+document.querySelectorAll("[data-payment-method]").forEach((button) => {
+  button.addEventListener("click", async () => {
+    const page = document.querySelector("[data-order-number]");
+    const original = button.textContent;
+    document.querySelectorAll("[data-payment-method]").forEach((item) => (item.disabled = true));
+    button.textContent = "Processing…";
+    try {
+      const response = await fetch(
+        `/api/v1/orders/${encodeURIComponent(page.dataset.orderNumber)}/payments`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": await commerceToken(),
+          },
+          body: JSON.stringify({
+            access_token: page.dataset.orderToken,
+            method: button.dataset.paymentMethod,
+          }),
+        },
+      );
+      const result = await response.json();
+      if (!response.ok) throw Error(commerceError(result));
+      showCommerceMessage("Payment recorded. Refreshing your order…", true);
+      location.reload();
+    } catch (error) {
+      showCommerceMessage(error.message || "Unable to complete the payment.");
+      document.querySelectorAll("[data-payment-method]").forEach((item) => (item.disabled = false));
+      button.textContent = original;
+    }
+  });
+});
+
 document.querySelectorAll(".filters").forEach((form) =>
   form.addEventListener("submit", () => {
     form.querySelectorAll("input,select").forEach((input) => {

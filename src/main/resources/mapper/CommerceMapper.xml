@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="hdu.ljq.persistence.CommerceMapper">
+  <select id="purchasableProduct" resultType="map">
+    SELECT id,name,sku,price_cents,currency,status FROM product
+    WHERE id=#{id} AND status='active'
+      AND category_id IN (SELECT id FROM category WHERE enabled=1)
+  </select>
+  <insert id="insertOrder" useGeneratedKeys="true" keyProperty="row.id">
+    INSERT INTO customer_order
+      (version,created_at,updated_at,order_number,access_token_hash,customer_name,email,phone,
+       shipping_address,currency,subtotal_cents,shipping_cents,total_cents,status,payment_status,
+       expires_at,paid_at,internal_note)
+    VALUES
+      (1,UTC_TIMESTAMP(3),UTC_TIMESTAMP(3),#{row.order_number},#{row.access_token_hash},
+       #{row.customer_name},#{row.email},#{row.phone},#{row.shipping_address},#{row.currency},
+       #{row.subtotal_cents},#{row.shipping_cents},#{row.total_cents},'pending_payment','unpaid',
+       DATE_ADD(UTC_TIMESTAMP(3),INTERVAL 30 MINUTE),NULL,'')
+  </insert>
+  <insert id="insertItem" useGeneratedKeys="true" keyProperty="row.id">
+    INSERT INTO order_item(order_id,product_id,product_name,sku,unit_price_cents,quantity,line_total_cents)
+    VALUES(#{row.order_id},#{row.product_id},#{row.product_name},#{row.sku},#{row.unit_price_cents},#{row.quantity},#{row.line_total_cents})
+  </insert>
+  <insert id="insertPayment" useGeneratedKeys="true" keyProperty="row.id">
+    INSERT INTO payment_record
+      (created_at,updated_at,order_id,payment_number,method,amount_cents,currency,status,provider_reference,paid_at)
+    VALUES
+      (UTC_TIMESTAMP(3),UTC_TIMESTAMP(3),#{row.order_id},#{row.payment_number},#{row.method},
+       #{row.amount_cents},#{row.currency},'succeeded',#{row.provider_reference},UTC_TIMESTAMP(3))
+  </insert>
+  <select id="orderByNumber" resultType="map">
+    SELECT * FROM customer_order WHERE order_number=#{number}
+  </select>
+  <select id="lockedOrderByNumber" resultType="map">
+    SELECT * FROM customer_order WHERE order_number=#{number} FOR UPDATE
+  </select>
+  <select id="orderById" resultType="map">
+    SELECT * FROM customer_order WHERE id=#{id}
+  </select>
+  <select id="items" resultType="map">
+    SELECT id,product_id,product_name,sku,unit_price_cents,quantity,line_total_cents
+    FROM order_item WHERE order_id=#{orderId} ORDER BY id
+  </select>
+  <select id="payments" resultType="map">
+    SELECT id,payment_number,method,amount_cents,currency,status,provider_reference,paid_at,created_at
+    FROM payment_record WHERE order_id=#{orderId} ORDER BY id DESC
+  </select>
+  <update id="markPaid">
+    UPDATE customer_order SET status='paid',payment_status='paid',paid_at=#{paidAt},
+      version=version+1,updated_at=UTC_TIMESTAMP(3)
+    WHERE id=#{id} AND status='pending_payment' AND payment_status='unpaid' AND expires_at>UTC_TIMESTAMP(3)
+  </update>
+  <update id="updateOrder">
+    UPDATE customer_order SET status=#{status},payment_status=#{paymentStatus},internal_note=#{note},
+      version=version+1,updated_at=UTC_TIMESTAMP(3)
+    WHERE id=#{id} AND version=#{version}
+  </update>
+  <update id="refundPayments">
+    UPDATE payment_record SET status='refunded',updated_at=UTC_TIMESTAMP(3)
+    WHERE order_id=#{orderId} AND status='succeeded'
+  </update>
+  <sql id="orderFilters">
+    WHERE 1=1
+    <if test="status != null and status != ''">AND o.status=#{status}</if>
+    <if test="q != null and q != ''">
+      AND (o.order_number LIKE #{q} ESCAPE '!' OR o.customer_name LIKE #{q} ESCAPE '!'
+        OR o.email LIKE #{q} ESCAPE '!')
+    </if>
+  </sql>
+  <select id="countOrders" resultType="long">
+    SELECT COUNT(*) FROM customer_order o <include refid="orderFilters"/>
+  </select>
+  <select id="listOrders" resultType="map">
+    SELECT o.* FROM customer_order o <include refid="orderFilters"/>
+    ORDER BY o.created_at DESC,o.id DESC LIMIT #{limit} OFFSET #{offset}
+  </select>
+  <sql id="paymentFilters">
+    WHERE 1=1
+    <if test="status != null and status != ''">AND p.status=#{status}</if>
+    <if test="q != null and q != ''">
+      AND (p.payment_number LIKE #{q} ESCAPE '!' OR o.order_number LIKE #{q} ESCAPE '!'
+        OR p.provider_reference LIKE #{q} ESCAPE '!')
+    </if>
+  </sql>
+  <select id="countPayments" resultType="long">
+    SELECT COUNT(*) FROM payment_record p JOIN customer_order o ON o.id=p.order_id
+    <include refid="paymentFilters"/>
+  </select>
+  <select id="listPayments" resultType="map">
+    SELECT p.*,o.order_number,o.customer_name,o.email FROM payment_record p
+    JOIN customer_order o ON o.id=p.order_id <include refid="paymentFilters"/>
+    ORDER BY p.created_at DESC,p.id DESC LIMIT #{limit} OFFSET #{offset}
+  </select>
+</mapper>

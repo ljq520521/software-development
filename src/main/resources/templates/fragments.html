@@ -77,8 +77,8 @@
         ><span><a href="/privacy">Privacy</a><a href="/terms">Terms</a></span>
       </div>
       <p class="sample-note">
-        Demonstration catalog. Activity photography is illustrative; product
-        details require confirmation.
+        Demonstration catalog and payment flow. No real funds are charged.
+        Activity photography is illustrative; product details require confirmation.
       </p>
     </footer>
     <article th:fragment="productCard(p)" class="product-card">
@@ -103,6 +103,7 @@
         ></a>
       </h3>
       <p th:text="${p.short_description}"></p>
+      <strong class="card-price" th:text="'¥'+${#numbers.formatDecimal(p.price_cents / 100.0,1,2)}">¥99.00</strong>
     </article>
     <div
       th:fragment="pagination(result)"
