@@ -207,7 +207,7 @@ public class Repository {
                   : "general product_question dealer_inquiry media_business";
           case "business_type" -> "retailer wholesaler distributor institution other";
           case "entity_type" ->
-              "product category content faq home site inquiry dealer_application media";
+              "product category content faq home site inquiry dealer_application dealer_account media order payment";
           default -> "";
         };
     if (!choices.isEmpty() && !List.of(choices.split(" ")).contains(v))

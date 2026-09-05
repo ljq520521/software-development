@@ -21,6 +21,8 @@ if [ "${1:-}" = init ]; then
     printf 'ADMIN_PASSWORD=%s\nMYSQL_PASSWORD=%s\nMYSQL_ROOT_PASSWORD=%s\n' \
       "$admin_password" "$mysql_password" "$mysql_root_password"
     printf '%s\n' 'COOKIE_SECURE=false' 'FORWARD_HEADERS_STRATEGY=none'
+    printf '%s\n' 'PUBLIC_BASE_URL=http://127.0.0.1:8081' 'SMTP_HOST=' 'SMTP_PORT=587'
+    printf '%s\n' 'SMTP_USERNAME=' 'SMTP_PASSWORD=' 'MAIL_FROM=no-reply@example.com' 'SMTP_STARTTLS=true'
   } > .env.docker
   echo '已生成 .env.docker（仅当前用户可读写）；管理员账号和密码请在该文件查看。'
   exit 0

@@ -10,6 +10,8 @@ public enum EntityType {
       "slug:STRING",
       "sku:STRING",
       "category_id:ID",
+      "price_cents:NUMBER",
+      "currency:STRING",
       "short_description:STRING",
       "description_markdown:STRING",
       "age_min:NUMBER",
@@ -111,6 +113,18 @@ public enum EntityType {
       "before_data:JSON",
       "after_data:JSON",
       "request_id:STRING"),
+  DEALER(
+      "dealer_account",
+      "application_id:ID",
+      "email:STRING",
+      "password_hash:STRING",
+      "company_name:STRING",
+      "contact_name:STRING",
+      "status:STRING",
+      "activation_token_hash:STRING",
+      "activation_expires_at:DATE",
+      "activated_at:DATE",
+      "last_login_at:DATE"),
   ADMIN(
       "admin_user", "email:STRING", "password_hash:STRING", "display_name:STRING", "status:STRING");
   public final String table;

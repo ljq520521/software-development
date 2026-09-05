@@ -45,6 +45,13 @@ services:
       SERVER_PORT: 8080
       UPLOAD_DIR: /app/data/uploads
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://127.0.0.1:8081}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-no-reply@wemove.local}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-true}
       SERVER_FORWARD_HEADERS_STRATEGY: ${FORWARD_HEADERS_STRATEGY:-none}
       SPRING_THYMELEAF_CACHE: "true"
       TZ: UTC

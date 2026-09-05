@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments :: head}"></head>
+  <body>
+    <header th:replace="~{fragments :: header}"></header>
+    <main class="container dealer-portal">
+      <div>
+        <span class="eyebrow">PARTNER PORTAL</span>
+        <h1 th:text="'Welcome, '+${dealerAccount.contact_name}">Welcome</h1>
+        <p>Your dealer account is active. This portal confirms account access and is ready for future partner resources.</p>
+      </div>
+      <section class="dealer-account-panel">
+        <h2>Account details</h2>
+        <dl>
+          <div><dt>Company</dt><dd th:text="${dealerAccount.company_name}"></dd></div>
+          <div><dt>Contact</dt><dd th:text="${dealerAccount.contact_name}"></dd></div>
+          <div><dt>Email</dt><dd th:text="${dealerAccount.email}"></dd></div>
+          <div><dt>Status</dt><dd>Active</dd></div>
+          <div><dt>Activated</dt><dd th:text="${dealerAccount.activated_at}"></dd></div>
+          <div><dt>Last sign-in</dt><dd th:text="${dealerAccount.last_login_at}"></dd></div>
+        </dl>
+        <button class="button outline" type="button" data-dealer-logout>Sign out</button>
+      </section>
+    </main>
+    <footer th:replace="~{fragments :: footer}"></footer>
+  </body>
+</html>

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments :: head}"></head>
+  <body>
+    <header th:replace="~{fragments :: header}"></header>
+    <main class="container commerce-page" th:data-order-number="${order.order_number}" th:data-order-token="${accessToken}">
+      <div class="breadcrumb"><a href="/">Home</a><span>/</span><span>Order</span><span>/</span><span th:text="${order.order_number}"></span></div>
+      <div class="order-page-heading">
+        <div><span class="eyebrow"><i></i> ORDER RECEIVED</span><h1 th:text="${order.order_number}"></h1><p>Save this private page address to check your order later.</p></div>
+        <span class="order-status" th:classappend="${order.status}" th:text="${order.status}"></span>
+      </div>
+      <div id="commerce-message" class="form-message" role="alert" tabindex="-1"></div>
+      <div class="order-layout">
+        <section class="order-panel">
+          <h2>Items</h2>
+          <div class="order-line" th:each="item:${order.items}">
+            <div><strong th:text="${item.product_name}"></strong><span th:text="${item.sku}+' · Qty '+${item.quantity}"></span></div>
+            <strong th:text="'¥'+${#numbers.formatDecimal(item.line_total_cents / 100.0,1,2)}"></strong>
+          </div>
+          <dl class="order-totals"><div><dt>Subtotal</dt><dd th:text="'¥'+${#numbers.formatDecimal(order.subtotal_cents / 100.0,1,2)}"></dd></div><div><dt>Shipping</dt><dd>Free</dd></div><div><dt>Total</dt><dd th:text="'¥'+${#numbers.formatDecimal(order.total_cents / 100.0,1,2)}"></dd></div></dl>
+        </section>
+        <aside class="order-panel payment-panel">
+          <div th:if="${order.status=='pending_payment'}">
+            <h2>Choose a demo payment</h2>
+            <p>No real payment details are collected. Selecting a method immediately marks this order as paid.</p>
+            <button class="button primary" type="button" data-payment-method="demo_card">Demo card payment →</button>
+            <button class="button outline" type="button" data-payment-method="demo_alipay">Demo Alipay →</button>
+            <button class="button outline" type="button" data-payment-method="demo_wechat">Demo WeChat Pay →</button>
+          </div>
+          <div th:unless="${order.status=='pending_payment'}">
+            <h2 th:text="${order.payment_status=='paid' ? 'Payment completed' : 'Order status'}"></h2>
+            <p th:if="${order.payment_status=='paid'}">Your simulated payment was recorded successfully. The order can now be processed in the management console.</p>
+            <p th:unless="${order.payment_status=='paid'}" th:text="'Current status: '+${order.status}"></p>
+          </div>
+          <div class="demo-payment-note">Demonstration only · no real funds are charged</div>
+        </aside>
+      </div>
+      <section class="order-panel order-details"><h2>Delivery details</h2><dl><div><dt>Name</dt><dd th:text="${order.customer_name}"></dd></div><div><dt>Email</dt><dd th:text="${order.email}"></dd></div><div><dt>Phone</dt><dd th:text="${order.phone}"></dd></div><div><dt>Address</dt><dd th:text="${order.shipping_address.address_line1}+', '+${order.shipping_address.city}+', '+${order.shipping_address.postal_code}+', '+${order.shipping_address.country}"></dd></div><div><dt>Created</dt><dd th:text="${order.created_at}"></dd></div></dl></section>
+    </main>
+    <footer th:replace="~{fragments :: footer}"></footer>
+  </body>
+</html>

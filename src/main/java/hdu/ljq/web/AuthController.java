@@ -63,6 +63,8 @@ public class AuthController {
     limits.clear(key);
     r.getSession();
     r.changeSessionId();
+    r.getSession().removeAttribute("dealerAccountId");
+    r.getSession().removeAttribute("dealerLoginAt");
     r.getSession().setAttribute("actorId", user.path("id").asText());
     r.getSession().setAttribute("loginAt", System.currentTimeMillis());
     var context = SecurityContextHolder.createEmptyContext();

@@ -22,8 +22,11 @@
     faqs: "常见问题",
     home: "首页配置",
     site: "站点设置",
+    orders: "订单管理",
+    payments: "支付流水",
     inquiries: "联系咨询",
     "dealer-applications": "合作申请",
+    "email-outbox": "邮件队列",
     media: "图片素材",
     "audit-logs": "操作记录",
   };
@@ -43,12 +46,27 @@
     disabled: "已停用",
     follow_up: "转商务洽谈",
     not_fit: "暂不合作",
+    pending_payment: "待支付",
+    paid: "已支付",
+    processing: "处理中",
+    shipped: "已发货",
+    completed: "已完成",
+    cancelled: "已取消",
+    refunded: "已退款",
+    succeeded: "支付成功",
+    unpaid: "未支付",
+    pending: "待发送",
+    sent: "已发送",
+    failed: "发送失败",
+    pending_activation: "待激活",
   };
   const labels = {
     name: "名称",
     slug: "网址标识",
     sku: "SKU",
     category_id: "所属分类",
+    price_yuan: "售价（元）",
+    currency: "币种",
     short_description: "简短介绍",
     description_markdown: "产品详情（Markdown）",
     age_min: "最小年龄",
@@ -86,6 +104,18 @@
     business_type: "业务类型",
     consent_at: "同意时间",
     created_at: "提交时间",
+    order_number: "订单号",
+    payment_number: "支付流水号",
+    customer_name: "客户姓名",
+    payment_status: "支付状态",
+    total_cents: "订单金额",
+    method: "支付方式",
+    provider_reference: "支付网关参考号",
+    recipient_email: "收件邮箱",
+    template_name: "邮件类型",
+    attempts: "发送次数",
+    last_error: "最近错误",
+    body_text: "邮件正文",
   };
   let csrf = "",
     user = null,
@@ -175,7 +205,7 @@
     )
       .map(
         ([k, v], i) =>
-          `<a href="${k === "dashboard" ? "/admin" : "/admin/" + (k === "site" ? "settings" : k)}" data-route="${k}" class="${current === k ? "selected" : ""}"><span aria-hidden="true">${["▦", "◫", "⊞", "▤", "?", "⌂", "⚙", "✉", "♧", "▧", "◷"][i]}</span>${v}</a>`,
+          `<a href="${k === "dashboard" ? "/admin" : "/admin/" + (k === "site" ? "settings" : k)}" data-route="${k}" class="${current === k ? "selected" : ""}"><span aria-hidden="true">${["▦", "◫", "⊞", "▤", "?", "⌂", "⚙", "▣", "¥", "✉", "♧", "✉", "▧", "◷"][i]}</span>${v}</a>`,
       )
       .join(
         "",
@@ -245,6 +275,8 @@
         `<div class="metrics">${[
           ["已发布产品", data.active_products, "products"],
           ["已发布文章", data.published_articles, "content"],
+          ["待支付订单", data.pending_orders, "orders"],
+          ["累计实收", `¥${(data.paid_revenue_cents / 100).toFixed(2)}`, "payments"],
           ["待处理咨询", data.new_inquiries, "inquiries"],
           ["待跟进合作", data.open_dealer_applications, "dealer-applications"],
         ]
@@ -306,15 +338,21 @@
         ? ["draft", "active", "hidden", "archived"]
         : current === "content"
           ? ["draft", "published", "archived"]
+          : current === "orders"
+            ? ["pending_payment", "paid", "processing", "shipped", "completed", "cancelled", "refunded"]
+            : current === "payments"
+              ? ["succeeded", "refunded"]
           : current === "inquiries"
             ? ["new", "in_progress", "resolved", "closed"]
             : current === "dealer-applications"
               ? ["submitted", "under_review", "closed"]
+              : current === "email-outbox"
+                ? ["pending", "sent", "failed"]
               : [];
     const canSearch = !["categories", "audit-logs"].includes(current);
     main.innerHTML =
       title(
-        `共 ${result.total} 条记录${current === "dealer-applications" ? " · 申请仅作为合作线索，不自动开通账号" : ""}`,
+        `共 ${result.total} 条记录${current === "dealer-applications" ? " · 批准申请将自动创建账号并生成激活邮件" : current === "email-outbox" ? result.smtp_configured ? " · SMTP 已配置，后台自动发送" : " · SMTP 未配置，邮件保存在 MySQL 供本地验收" : ""}`,
         writable
           ? '<button class="button primary" id="new-record">＋ 新建</button>'
           : current === "media"
@@ -368,12 +406,18 @@
           ? ["分类名称", "网址标识", "状态", "排序"]
           : current === "content"
             ? ["文章 / 页面", "类型", "状态", "更新时间"]
-            : current === "faqs"
+              : current === "faqs"
               ? ["问题", "分组", "状态", "排序"]
+              : current === "orders"
+                ? ["订单 / 客户", "金额", "订单状态", "创建时间"]
+                : current === "payments"
+                  ? ["支付流水 / 订单", "金额", "支付方式", "状态"]
               : current === "inquiries"
                 ? ["联系人 / 主题", "编号", "状态", "提交时间"]
                 : current === "dealer-applications"
                   ? ["公司 / 地区", "编号", "状态", "提交时间"]
+                  : current === "email-outbox"
+                    ? ["收件人 / 主题", "邮件类型", "状态", "创建时间"]
                   : ["动作 / 对象", "操作人", "请求编号", "时间"];
     return `<div class="table-scroll"><table class="admin-table"><thead><tr>${columns.map((x) => `<th scope="col">${x}</th>`).join("")}<th scope="col">操作</th></tr></thead><tbody>${records
       .map((r) => {
@@ -411,6 +455,22 @@
               r.sort_order,
             ];
             break;
+          case "orders":
+            cells = [
+              `${escape(r.order_number)}<span class="subtext">${escape(r.customer_name)} · ${escape(r.email)}</span>`,
+              `¥${(Number(r.total_cents) / 100).toFixed(2)}`,
+              badge(r.status),
+              date(r.created_at),
+            ];
+            break;
+          case "payments":
+            cells = [
+              `${escape(r.payment_number)}<span class="subtext">${escape(r.order_number)}</span>`,
+              `¥${(Number(r.amount_cents) / 100).toFixed(2)}`,
+              escape(r.method),
+              badge(r.status),
+            ];
+            break;
           case "inquiries":
             cells = [
               `${escape(r.name)}<span class="subtext">${escape(r.subject)}</span>`,
@@ -427,6 +487,14 @@
               date(r.created_at),
             ];
             break;
+          case "email-outbox":
+            cells = [
+              `${escape(r.recipient_email)}<span class="subtext">${escape(r.subject)}</span>`,
+              escape(r.template_name),
+              badge(r.status),
+              date(r.created_at),
+            ];
+            break;
           default:
             cells = [
               `${escape(r.action)} / ${escape(r.entity_type)} #${escape(r.entity_id)}`,
@@ -435,7 +503,7 @@
               date(r.created_at),
             ];
         }
-        return `<tr>${cells.map((cell, i) => `<td class="${i === 0 ? "record-name" : ""}">${cell}</td>`).join("")}<td><button class="row-button" data-edit="${escape(r.id)}">${["inquiries", "dealer-applications", "audit-logs"].includes(current) ? "查看详情" : "编辑"}</button></td></tr>`;
+        return `<tr>${cells.map((cell, i) => `<td class="${i === 0 ? "record-name" : ""}">${cell}</td>`).join("")}<td><button class="row-button" data-edit="${escape(r.id)}">${["inquiries", "dealer-applications", "email-outbox", "audit-logs", "payments"].includes(current) ? "查看详情" : "编辑"}</button></td></tr>`;
       })
       .join("")}</tbody></table></div>`;
   }
@@ -447,7 +515,7 @@
     required = false,
     custom = "",
   ) {
-    return `<label class="field ${wide ? "span-two" : ""}"><span>${escape(custom || labels[name] || name)}${required ? " *" : ""}</span>${type === "textarea" ? `<textarea name="${name}" rows="5" ${required ? "required" : ""}>${escape(value)}</textarea>` : `<input name="${name}" type="${type}" value="${escape(value)}" ${required ? "required" : ""} ${type === "number" ? 'min="0"' : ""}>`}</label>`;
+    return `<label class="field ${wide ? "span-two" : ""}"><span>${escape(custom || labels[name] || name)}${required ? " *" : ""}</span>${type === "textarea" ? `<textarea name="${name}" rows="5" ${required ? "required" : ""}>${escape(value)}</textarea>` : `<input name="${name}" type="${type}" value="${escape(value)}" ${required ? "required" : ""} ${type === "number" ? `min="0"${name === "price_yuan" ? ' step="0.01"' : ""}` : ""}>`}</label>`;
   }
   function select(name, value, choices, wide = false, custom = "") {
     return `<label class="field ${wide ? "span-two" : ""}"><span>${escape(custom || labels[name] || name)}</span><select name="${name}">${choices.map(([v, t]) => `<option value="${escape(v)}" ${String(value) === String(v) ? "selected" : ""}>${escape(t)}</option>`).join("")}</select></label>`;
@@ -489,7 +557,7 @@
       const resource = current;
       if (
         record &&
-        ["products", "content", "inquiries", "dealer-applications"].includes(
+        ["products", "content", "orders", "inquiries", "dealer-applications"].includes(
           current,
         )
       )
@@ -514,6 +582,8 @@
             data.category_id || categories[0]?.id,
             categories.map((x) => [x.id, x.name]),
           ) +
+          field("price_yuan", ((data.price_cents ?? 9900) / 100).toFixed(2), "number", false, true) +
+          select("currency", data.currency || "CNY", [["CNY", "人民币（CNY）"]]) +
           check("featured", data.featured, "在默认排序中优先显示") +
           field("short_description", data.short_description, "textarea", true) +
           field(
@@ -695,8 +765,8 @@
         if (current === "dealer-applications")
           body += select("outcome", data.outcome, [
             ["", "尚未关闭"],
-            ["follow_up", "转入人工商务洽谈"],
-            ["not_fit", "暂不合作"],
+            ["follow_up", "批准并开通经销商账号"],
+            ["not_fit", "拒绝申请"],
           ]);
         body += field(
           "internal_note",
@@ -707,16 +777,38 @@
           "处理备注（仅管理员可见）",
         );
       }
+      if (current === "orders") {
+        const statusChoices = {
+          pending_payment: ["pending_payment", "cancelled"],
+          paid: ["paid", "processing", "refunded"],
+          processing: ["processing", "shipped", "refunded"],
+          shipped: ["shipped", "completed", "refunded"],
+          completed: ["completed", "refunded"],
+          cancelled: ["cancelled"],
+          refunded: ["refunded"],
+        }[data.status];
+        const address = data.shipping_address || {};
+        body = `<dl class="record-detail span-two"><div><dt>订单号</dt><dd>${escape(data.order_number)}</dd></div><div><dt>金额</dt><dd>¥${(Number(data.total_cents) / 100).toFixed(2)}</dd></div><div><dt>客户</dt><dd>${escape(data.customer_name)}</dd></div><div><dt>邮箱</dt><dd>${escape(data.email)}</dd></div><div><dt>电话</dt><dd>${escape(data.phone)}</dd></div><div><dt>支付状态</dt><dd>${escape(stateLabels[data.payment_status] || data.payment_status)}</dd></div><div class="wide"><dt>配送地址</dt><dd>${escape([address.address_line1, address.address_line2, address.city, address.region, address.postal_code, address.country].filter(Boolean).join(", "))}</dd></div><div class="wide"><dt>商品</dt><dd>${(data.items || []).map((item) => `${escape(item.product_name)} × ${escape(item.quantity)}（¥${(Number(item.line_total_cents) / 100).toFixed(2)}）`).join("<br>")}</dd></div><div class="wide"><dt>支付流水</dt><dd>${(data.payments || []).length ? data.payments.map((payment) => `${escape(payment.payment_number)} · ${escape(payment.method)} · ${escape(stateLabels[payment.status] || payment.status)}`).join("<br>") : "尚未支付"}</dd></div><div><dt>创建时间</dt><dd>${date(data.created_at)}</dd></div><div><dt>支付时间</dt><dd>${date(data.paid_at)}</dd></div></dl>`;
+        body += select("status", data.status, statusChoices.map((value) => [value, stateLabels[value]]));
+        body += field("internal_note", data.internal_note, "textarea", true, false, "订单处理备注（仅管理员可见）");
+      }
+      if (current === "payments") {
+        body = `<dl class="record-detail span-two"><div><dt>支付流水号</dt><dd>${escape(data.payment_number)}</dd></div><div><dt>订单号</dt><dd>${escape(data.order_number)}</dd></div><div><dt>客户</dt><dd>${escape(data.customer_name)}</dd></div><div><dt>邮箱</dt><dd>${escape(data.email)}</dd></div><div><dt>金额</dt><dd>¥${(Number(data.amount_cents) / 100).toFixed(2)}</dd></div><div><dt>支付方式</dt><dd>${escape(data.method)}</dd></div><div><dt>状态</dt><dd>${escape(stateLabels[data.status] || data.status)}</dd></div><div class="wide"><dt>网关参考号</dt><dd>${escape(data.provider_reference)}</dd></div><div><dt>支付时间</dt><dd>${date(data.paid_at)}</dd></div></dl>`;
+      }
+      if (current === "email-outbox") {
+        body = `<dl class="record-detail span-two"><div><dt>收件邮箱</dt><dd>${escape(data.recipient_email)}</dd></div><div><dt>状态</dt><dd>${badge(data.status)}</dd></div><div class="wide"><dt>主题</dt><dd>${escape(data.subject)}</dd></div><div><dt>邮件类型</dt><dd>${escape(data.template_name)}</dd></div><div><dt>关联对象</dt><dd>${escape(data.related_type)} #${escape(data.related_id || "—")}</dd></div><div><dt>发送次数</dt><dd>${escape(data.attempts)}</dd></div><div><dt>发送时间</dt><dd>${date(data.sent_at)}</dd></div><div class="wide"><dt>最近错误</dt><dd>${escape(data.last_error || "—")}</dd></div><div class="wide"><dt>邮件正文</dt><dd><pre class="audit-json">${escape(data.body_text)}</pre></dd></div></dl>`;
+      }
       if (current === "audit-logs")
         body = `<div class="span-two"><h3>变更前</h3><pre class="audit-json">${escape(JSON.stringify(data.before_data, null, 2))}</pre><h3>变更后</h3><pre class="audit-json">${escape(JSON.stringify(data.after_data, null, 2))}</pre></div>`;
-      dialog.innerHTML = `<div class="editor-header"><h2 id="editor-title">${current === "audit-logs" ? "查看操作记录" : record ? "编辑 / " + titles[current] : "新建 / " + titles[current]}</h2><button type="button" data-close aria-label="关闭">×</button></div><form id="editor-form"><div class="editor-content"><div id="editor-message" class="editor-message" role="alert" tabindex="-1"></div><div class="editor-grid">${body}</div></div><div class="editor-actions"><button class="button outline" type="button" data-close>取消</button>${current === "audit-logs" ? "" : '<button class="button primary" type="submit">保存修改 →</button>'}</div></form>`;
+      const readOnly = ["audit-logs", "payments", "email-outbox"].includes(current);
+      dialog.innerHTML = `<div class="editor-header"><h2 id="editor-title">${readOnly ? "查看 / " + titles[current] : record ? "编辑 / " + titles[current] : "新建 / " + titles[current]}</h2><button type="button" data-close aria-label="关闭">×</button></div><form id="editor-form"><div class="editor-content"><div id="editor-message" class="editor-message" role="alert" tabindex="-1"></div><div class="editor-grid">${body}</div></div><div class="editor-actions"><button class="button outline" type="button" data-close>${readOnly ? "关闭" : "取消"}</button>${readOnly ? "" : '<button class="button primary" type="submit">保存修改 →</button>'}</div></form>`;
       dialog
         .querySelectorAll("[data-close]")
         .forEach((b) => (b.onclick = () => dialog.close()));
       dialog.showModal();
       if (["products", "content", "home"].includes(current)) bindImages();
       if (current === "home") renderSections(new Set(data.enabled_sections));
-      document.querySelector("#editor-form").onsubmit = async (e) => {
+      if (!readOnly) document.querySelector("#editor-form").onsubmit = async (e) => {
         e.preventDefault();
         const button = e.target.querySelector("[type=submit]");
         button.disabled = true;
@@ -866,6 +958,8 @@
           slug: val("slug"),
           sku: val("sku"),
           category_id: val("category_id"),
+          price_cents: Math.round(num("price_yuan") * 100),
+          currency: val("currency"),
           short_description: val("short_description"),
           description_markdown: val("description_markdown"),
           age_min: num("age_min"),
@@ -955,6 +1049,9 @@
         };
         break;
       case "inquiries":
+        d = { status: val("status"), internal_note: val("internal_note") };
+        break;
+      case "orders":
         d = { status: val("status"), internal_note: val("internal_note") };
         break;
       case "dealer-applications":

@@ -56,8 +56,18 @@
           <ul class="feature-list">
             <li th:each="feature:${product.features}" th:text="${feature}"></li>
           </ul>
+          <div class="product-price">
+            <span>Price</span>
+            <strong th:text="'¥'+${#numbers.formatDecimal(product.price_cents / 100.0,1,2)}">¥99.00</strong>
+            <small>Free demonstration shipping</small>
+          </div>
           <a
             class="button primary"
+            th:href="@{/checkout(product_id=${product.id})}"
+            >Buy now ↗</a
+          >
+          <a
+            class="button outline product-contact"
             th:href="@{/contact(product_id=${product.id})}"
             >Contact about this product ↗</a
           >

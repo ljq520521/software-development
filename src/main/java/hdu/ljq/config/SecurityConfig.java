@@ -54,6 +54,8 @@ public class SecurityConfig {
             a ->
                 a.requestMatchers("/api/v1/admin/**", "/api/v1/auth/me", "/api/v1/auth/logout")
                     .hasRole("ADMIN")
+                    .requestMatchers("/api/v1/dealer/auth/me", "/api/v1/dealer/auth/logout")
+                    .hasRole("DEALER")
                     .anyRequest()
                     .permitAll())
         .formLogin(AbstractHttpConfigurer::disable)
@@ -97,6 +99,25 @@ public class SecurityConfig {
               try {
                 invalid |=
                     !repo.find(EntityType.ADMIN, session.getAttribute("actorId").toString())
+                        .path("status")
+                        .asText()
+                        .equals("active");
+              } catch (ApiException ex) {
+                invalid = true;
+              }
+              if (invalid) {
+                session.invalidate();
+                org.springframework.security.core.context.SecurityContextHolder.clearContext();
+              }
+            } else if (session != null && session.getAttribute("dealerAccountId") != null) {
+              boolean invalid =
+                  System.currentTimeMillis() - (long) session.getAttribute("dealerLoginAt")
+                      > 28800000;
+              try {
+                invalid |=
+                    !repo.find(
+                            EntityType.DEALER,
+                            session.getAttribute("dealerAccountId").toString())
                         .path("status")
                         .asText()
                         .equals("active");

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments :: head}"></head>
+  <body>
+    <header th:replace="~{fragments :: header}"></header>
+    <main class="container commerce-page">
+      <div class="breadcrumb"><a href="/">Home</a><span>/</span><a href="/products">Products</a><span>/</span><span>Checkout</span></div>
+      <div class="checkout-layout">
+        <section>
+          <span class="eyebrow"><i></i> SECURE DEMONSTRATION CHECKOUT</span>
+          <h1>Complete your order</h1>
+          <p class="demo-payment-note">This project uses a simulated payment gateway. It never asks for or charges a real bank card.</p>
+          <div id="commerce-message" class="form-message" role="alert" tabindex="-1"></div>
+          <form class="form-grid checkout-form" data-commerce-form>
+            <input type="hidden" name="product_id" th:value="${product.id}" />
+            <input type="hidden" name="privacy_version" th:value="${site.privacy_version}" />
+            <label class="field"><span>Full name *</span><input name="customer_name" required maxlength="120" autocomplete="name" /></label>
+            <label class="field"><span>Email *</span><input name="email" type="email" required maxlength="191" autocomplete="email" /></label>
+            <label class="field"><span>Phone *</span><input name="phone" required minlength="6" maxlength="40" autocomplete="tel" /></label>
+            <label class="field"><span>Quantity *</span><input name="quantity" type="number" value="1" min="1" max="20" required /></label>
+            <label class="field span-two"><span>Address *</span><input name="address_line1" required maxlength="200" autocomplete="address-line1" /></label>
+            <label class="field span-two"><span>Address line 2</span><input name="address_line2" maxlength="200" autocomplete="address-line2" /></label>
+            <label class="field"><span>City *</span><input name="city" required maxlength="100" autocomplete="address-level2" /></label>
+            <label class="field"><span>State / region</span><input name="region" maxlength="100" autocomplete="address-level1" /></label>
+            <label class="field"><span>Postal code *</span><input name="postal_code" required maxlength="20" autocomplete="postal-code" /></label>
+            <label class="field"><span>Country / region *</span><select name="country" required autocomplete="country"><option value="">Choose a country</option><option th:each="country:${countries}" th:value="${country.code}" th:text="${country.name}" th:selected="${country.code=='CN'}"></option></select></label>
+            <label class="consent span-two"><input name="privacy_consent" type="checkbox" required /><span>I agree to the <a href="/privacy" target="_blank">privacy notice</a> for processing this order.</span></label>
+            <button class="button primary span-two" type="submit">Create order and continue to payment →</button>
+          </form>
+        </section>
+        <aside class="order-summary">
+          <h2>Order summary</h2>
+          <div class="summary-product">
+            <div><strong th:text="${product.name}"></strong><span th:text="${product.sku}"></span></div>
+            <strong th:text="'¥'+${#numbers.formatDecimal(product.price_cents / 100.0,1,2)}">¥99.00</strong>
+          </div>
+          <dl><div><dt>Shipping</dt><dd>Free</dd></div><div class="summary-total"><dt>Total per item</dt><dd th:text="'¥'+${#numbers.formatDecimal(product.price_cents / 100.0,1,2)}">¥99.00</dd></div></dl>
+          <p>Orders remain payable for 30 minutes. Product name, SKU and price are saved with the order.</p>
+        </aside>
+      </div>
+    </main>
+    <footer th:replace="~{fragments :: footer}"></footer>
+  </body>
+</html>

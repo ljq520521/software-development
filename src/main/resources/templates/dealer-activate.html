@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments :: head}"></head>
+  <body>
+    <header th:replace="~{fragments :: header}"></header>
+    <main class="container dealer-auth-layout">
+      <section class="dealer-auth-card">
+        <span class="eyebrow">PARTNER ACCESS</span>
+        <h1>Activate your dealer account</h1>
+        <p>Create a password to finish opening your WEMOVE partner account.</p>
+        <div id="dealer-message" class="form-message" role="status" tabindex="-1"></div>
+        <form data-dealer-activation>
+          <input name="token" type="hidden" th:value="${activationToken}" />
+          <label class="field"><span>Password *</span><input name="password" type="password" minlength="12" maxlength="72" autocomplete="new-password" required /></label>
+          <label class="field"><span>Confirm password *</span><input name="confirm_password" type="password" minlength="12" maxlength="72" autocomplete="new-password" required /></label>
+          <button class="button primary" type="submit">Activate account →</button>
+        </form>
+        <a class="text-link" href="/dealers/login">Already activated? Sign in</a>
+      </section>
+    </main>
+    <footer th:replace="~{fragments :: footer}"></footer>
+  </body>
+</html>

@@ -34,6 +34,8 @@ CREATE TABLE IF NOT EXISTS product (
   `slug` VARCHAR(191) NULL,
   `sku` VARCHAR(191) NULL,
   `category_id` BIGINT NULL,
+  `price_cents` BIGINT NOT NULL DEFAULT 9900,
+  `currency` CHAR(3) NOT NULL DEFAULT 'CNY',
   `short_description` VARCHAR(500) NULL,
   `description_markdown` TEXT NULL,
   `age_min` BIGINT NULL,
@@ -50,7 +52,9 @@ CREATE TABLE IF NOT EXISTS product (
   UNIQUE KEY uk_product_sku (`sku`),
   KEY ix_product_status (status,created_at),
   CONSTRAINT fk_product_category FOREIGN KEY(category_id) REFERENCES category(id),
-  CHECK(age_min BETWEEN 0 AND 99 AND age_max BETWEEN age_min AND 99)
+  CHECK(age_min BETWEEN 0 AND 99 AND age_max BETWEEN age_min AND 99),
+  CHECK(price_cents BETWEEN 1 AND 99999999),
+  CHECK(currency IN ('CNY'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS content (
@@ -169,6 +173,49 @@ CREATE TABLE IF NOT EXISTS dealer_application (
   KEY ix_dealer_application_status (status,created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS dealer_account (
+  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  version INT NOT NULL DEFAULT 1,
+  created_at DATETIME(3) NOT NULL,
+  updated_at DATETIME(3) NOT NULL,
+  application_id BIGINT NOT NULL,
+  email VARCHAR(191) NOT NULL,
+  password_hash VARCHAR(500) NULL,
+  company_name VARCHAR(200) NOT NULL,
+  contact_name VARCHAR(100) NOT NULL,
+  status VARCHAR(40) NOT NULL,
+  activation_token_hash CHAR(64) NULL,
+  activation_expires_at DATETIME(3) NULL,
+  activated_at DATETIME(3) NULL,
+  last_login_at DATETIME(3) NULL,
+  UNIQUE KEY uk_dealer_account_email (email),
+  UNIQUE KEY uk_dealer_account_application (application_id),
+  UNIQUE KEY uk_dealer_activation_token (activation_token_hash),
+  KEY ix_dealer_account_status (status, created_at),
+  CONSTRAINT fk_dealer_account_application FOREIGN KEY(application_id) REFERENCES dealer_application(id),
+  CHECK(status IN ('pending_activation','active','disabled'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS email_outbox (
+  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  created_at DATETIME(3) NOT NULL,
+  updated_at DATETIME(3) NOT NULL,
+  recipient_email VARCHAR(191) NOT NULL,
+  subject VARCHAR(300) NOT NULL,
+  body_text TEXT NOT NULL,
+  template_name VARCHAR(80) NOT NULL,
+  related_type VARCHAR(40) NOT NULL,
+  related_id BIGINT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'pending',
+  attempts INT NOT NULL DEFAULT 0,
+  next_attempt_at DATETIME(3) NOT NULL,
+  sent_at DATETIME(3) NULL,
+  last_error VARCHAR(1000) NULL,
+  KEY ix_email_outbox_delivery (status, next_attempt_at, id),
+  KEY ix_email_outbox_recipient (recipient_email, created_at),
+  CHECK(status IN ('pending','sent','failed'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS audit_log (
   id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   version INT NOT NULL DEFAULT 1,
@@ -183,10 +230,73 @@ CREATE TABLE IF NOT EXISTS audit_log (
   `request_id` VARCHAR(500) NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS app_lock (lock_name VARCHAR(40) PRIMARY KEY) ENGINE=InnoDB;
-INSERT IGNORE INTO app_lock VALUES ('catalog'),('leads'),('config'),('seed');
+INSERT IGNORE INTO app_lock VALUES ('catalog'),('leads'),('config'),('seed'),('commerce'),('dealers');
 CREATE TABLE IF NOT EXISTS idempotency_record (
  endpoint VARCHAR(100) NOT NULL, key_value VARCHAR(36) NOT NULL,
  request_hash VARCHAR(64) NOT NULL, response_data JSON NOT NULL,
  expires_at DATETIME(3) NOT NULL,
  PRIMARY KEY(endpoint,key_value), KEY ix_idempotency_expiry(expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS customer_order (
+  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  version INT NOT NULL DEFAULT 1,
+  created_at DATETIME(3) NOT NULL,
+  updated_at DATETIME(3) NOT NULL,
+  order_number VARCHAR(40) NOT NULL,
+  access_token_hash CHAR(64) NOT NULL,
+  customer_name VARCHAR(120) NOT NULL,
+  email VARCHAR(191) NOT NULL,
+  phone VARCHAR(40) NOT NULL,
+  shipping_address JSON NOT NULL,
+  currency CHAR(3) NOT NULL,
+  subtotal_cents BIGINT NOT NULL,
+  shipping_cents BIGINT NOT NULL DEFAULT 0,
+  total_cents BIGINT NOT NULL,
+  status VARCHAR(40) NOT NULL,
+  payment_status VARCHAR(40) NOT NULL,
+  expires_at DATETIME(3) NOT NULL,
+  paid_at DATETIME(3) NULL,
+  internal_note TEXT NULL,
+  UNIQUE KEY uk_customer_order_number (order_number),
+  KEY ix_customer_order_status (status, created_at),
+  KEY ix_customer_order_email (email, created_at),
+  CHECK(currency IN ('CNY')),
+  CHECK(subtotal_cents >= 0 AND shipping_cents >= 0 AND total_cents >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS order_item (
+  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  order_id BIGINT NOT NULL,
+  product_id BIGINT NOT NULL,
+  product_name VARCHAR(160) NOT NULL,
+  sku VARCHAR(64) NOT NULL,
+  unit_price_cents BIGINT NOT NULL,
+  quantity INT NOT NULL,
+  line_total_cents BIGINT NOT NULL,
+  CONSTRAINT fk_order_item_order FOREIGN KEY(order_id) REFERENCES customer_order(id),
+  CONSTRAINT fk_order_item_product FOREIGN KEY(product_id) REFERENCES product(id),
+  KEY ix_order_item_order (order_id),
+  CHECK(quantity BETWEEN 1 AND 20),
+  CHECK(unit_price_cents > 0 AND line_total_cents > 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS payment_record (
+  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  created_at DATETIME(3) NOT NULL,
+  updated_at DATETIME(3) NOT NULL,
+  order_id BIGINT NOT NULL,
+  payment_number VARCHAR(50) NOT NULL,
+  method VARCHAR(40) NOT NULL,
+  amount_cents BIGINT NOT NULL,
+  currency CHAR(3) NOT NULL,
+  status VARCHAR(40) NOT NULL,
+  provider_reference VARCHAR(100) NOT NULL,
+  paid_at DATETIME(3) NULL,
+  UNIQUE KEY uk_payment_number (payment_number),
+  KEY ix_payment_order (order_id, created_at),
+  KEY ix_payment_status (status, created_at),
+  CONSTRAINT fk_payment_order FOREIGN KEY(order_id) REFERENCES customer_order(id),
+  CHECK(amount_cents > 0),
+  CHECK(currency IN ('CNY'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

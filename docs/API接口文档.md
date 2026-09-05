@@ -1,14 +1,14 @@
 # WEMOVE SPORTS 首版接口文档
 
-版本：v1.0 · 日期：2026-09-04 · 状态：首版已实现；Java 项目位于仓库根目录
+版本：v1.1 · 日期：2026-09-05 · 状态：已实现；Java 项目位于 Building-block-web/Building-block-web
 
 依据：《选题1 网站重构需求.docx》及用户允许按需取舍的要求。后端确定使用 **Java + Spring Boot + MyBatis**，数据库使用 **MySQL**。本文件定义首版开发合同；原需求中的“全部必须实现”不作为本轮交付范围。
 
-配套文件：[OpenAPI 接口定义](./openapi.json)。可导入支持 OpenAPI 3.0 的接口工具；本机开发地址为 localhost:8080，Docker 默认地址为 127.0.0.1:8081，启动方式见 [README](../README.md)。
+配套文件：[OpenAPI 接口定义](./openapi.json)。可导入支持 OpenAPI 3.0 的接口工具；其中 localhost:8080 为本机开发地址，启动方式见项目 README。
 
 ## 1. 首版实现范围
 
-选取“浏览品牌和产品 → 提交咨询/合作申请 → 后台查看与处理 → 后台维护前台内容”的完整流程。数据落入 MySQL，刷新页面、重启服务后仍然保留。
+选取“浏览品牌和产品 → 下单并完成演示支付/提交咨询 → 后台查看与处理 → 后台维护前台内容”的完整流程。数据落入 MySQL，刷新页面、重启服务后仍然保留。
 
 | 模块 | 首版功能 | 对应原需求 |
 | --- | --- | --- |
@@ -16,17 +16,19 @@
 | 产品中心 | 分类、关键词/SKU 搜索、年龄和室内/户外筛选、排序、分页、详情、图片、规格 | 4.3、4.4、14.2 |
 | 内容与支持 | 玩法文章列表/详情、支持页、FAQ | 4.6、4.9、10.1 |
 | 联系咨询 | 表单校验、提交编号、后台跟进、内部备注、关闭 | 4.10、7.12 |
-| 经销商合作申请 | 企业信息、意向产品、提交编号、后台评估与跟进 | 4.8、7.8 的线索部分 |
+| 经销商合作申请 | 企业信息、意向产品、提交编号、后台评估、批准后自动开通账号、激活与登录门户 | 4.8、7.8 |
+| 自动邮件 | 咨询/申请回执、订单/付款确认、经销商激活通知；MySQL Outbox 与 SMTP 重试 | 7.12、8.5 |
+| 订单与支付 | 产品定价、结算、订单快照、私有查询、演示支付、后台状态处理和演示退款 | 新增完整业务闭环 |
 | 管理后台 | 管理员登录、概览、产品/分类/文章/页面/FAQ 管理、首页与品牌设置、图片上传 | 7.2、7.3、7.4、7.10、7.11、7.14 |
 | 基础工程 | 服务端权限、分页、统一错误、限流、审计、乐观锁、健康检查 | 2.2、15.3、16、17 |
 
-首版明确暂缓：普通用户注册/收藏、购物车、价格与库存、支付/订单/退款、经销商账号和专属目录、报价、地图、文件下载、邮件/短信、资质附件、MFA、多角色权限配置、多语言/多市场、定时发布、复杂搜索推荐及第三方系统集成。
+首版明确暂缓：普通用户注册/收藏、购物车、库存、真实第三方支付网关、经销商专属价格与报价、地图、文件下载、短信、资质附件、MFA、复杂多角色权限配置、多语言/多市场、定时发布、复杂搜索推荐及第三方系统集成。
 
 这些取舍直接影响页面行为：
 
-- 产品按钮为 **Contact about this product**，进入已选择该产品的联系表单；不出现购买、价格、购物车或订单入口。
-- 经销商申请采用**合作线索模式**，不采用原文中“审核通过后自动开通经销商企业和账号”的流程。后台记录是否值得继续洽谈，不授予经销商身份。
-- 提交成功只显示“已收到申请/咨询”和编号；页面不能显示“邮件已发送”。工作人员通过已有业务联系方式人工跟进，系统仅记录处理结果。
+- 产品展示人民币售价，并提供 **Buy now** 入口；仍保留产品咨询。支付页面为明确标识的本地演示网关，不采集真实银行卡或第三方支付凭据。
+- 经销商申请由管理员审核；选择 `follow_up` 表示批准，系统在同一事务中创建待激活账号和激活邮件。选择 `not_fit` 表示拒绝并创建结果通知邮件。
+- 咨询、合作申请、订单创建和支付成功都会写入 `email_outbox`。未配置 SMTP 时邮件保留在 MySQL；配置后后台任务自动发送并记录结果。
 - 前台默认英文、后台界面中文；业务内容只维护一份英文版本。后台菜单中文不代表接口数据自动翻译。
 - 原需求中的复杂功能不放置无法使用的按钮。暂不接收资质文件，也不提供私有文件功能。
 
@@ -37,12 +39,17 @@
 | `/` | 首页 | `GET /site`、`GET /home` |
 | `/products` | 产品筛选与搜索 | `GET /categories`、`GET /products` |
 | `/products/{slug}` | 产品详情 | `GET /products/{slug}` |
+| `/checkout?product_id={id}` | 填写收货信息并创建订单 | `POST /orders` |
+| `/orders/{number}?token={token}` | 使用私有令牌查询和支付订单 | `GET /orders/{number}`、`POST /orders/{number}/payments` |
 | `/play`、`/play/{slug}` | 玩法文章 | `GET /content?type=article`、`GET /content/{slug}` |
 | `/about`、`/quality-safety` | 品牌介绍与质量信息 | `GET /content/{slug}` |
 | `/pages/{slug}` | 后台新建的其他普通内容页 | `GET /content/{slug}`，并验证 type=page |
 | `/support`、`/support/faq` | 支持与问答 | `GET /content/support`、`GET /faqs` |
 | `/contact` | 联系表单 | `POST /forms/contact` |
 | `/dealers/apply` | 合作申请 | `POST /dealer/applications` |
+| `/dealers/activate?token={token}` | 设置经销商密码并激活账号 | `POST /dealer/auth/activate` |
+| `/dealers/login` | 经销商登录 | `POST /dealer/auth/login` |
+| `/dealers/portal` | 经销商门户 | `GET /dealer/auth/me`、`POST /dealer/auth/logout` |
 | `/privacy`、`/terms` | 信息与同意说明 | `GET /content/{slug}` |
 | `/admin/login` | 后台登录 | `/auth/csrf`、`/auth/login` |
 | `/admin` | 后台概览 | `GET /admin/dashboard` |
@@ -50,6 +57,8 @@
 | `/admin/content`、`/admin/faqs` | 内容与 FAQ | `/admin/content`、`/admin/faqs` |
 | `/admin/home`、`/admin/settings` | 首页与站点配置 | `/admin/home`、`/admin/site` |
 | `/admin/inquiries`、`/admin/dealer-applications` | 线索处理 | `/admin/inquiries`、`/admin/dealer-applications` |
+| `/admin/orders`、`/admin/payments` | 订单处理与支付流水 | `/admin/orders`、`/admin/payments` |
+| `/admin/email-outbox` | 查看邮件任务、正文、发送状态和错误 | `GET /admin/email-outbox` |
 | `/admin/audit-logs` | 操作历史 | `GET /admin/audit-logs` |
 
 上表接口路径均省略 `/api/v1` 前缀。分类使用 `/products?category=bowling`，避免原需求中 `/products/{category}` 与 `/products/{slug}` 的路由歧义。产品筛选条件保留在页面 URL，返回列表时恢复条件。不存在或未发布的公开内容返回 404，并展示有导航入口的错误页。文章只能由 `/play/{slug}` 展示；普通页面使用 `/pages/{slug}`，五个系统页面使用表中的固定路径，访问其 `/pages/{slug}` 别名时重定向到固定路径。
@@ -63,7 +72,7 @@
 | 数据访问 | MyBatis + MyBatis Spring Boot Starter 3.0.x，Mapper XML 管理 SQL |
 | 数据库 | MySQL 8.4、InnoDB、utf8mb4；开发时锁定具体补丁版本 |
 | 构建 | Maven，后续项目提供 Maven Wrapper |
-| 身份认证 | Spring Security + 服务端 Session，首版只有 `admin` 角色 |
+| 身份认证 | Spring Security + 服务端 Session，支持 `admin` 与 `dealer` 角色 |
 | 文件 | 本地持久目录存放公开图片，数据库保存元信息；路径通过配置指定 |
 | 文档 | REST JSON + OpenAPI 3.0.3 |
 
@@ -131,18 +140,18 @@ Controller 负责协议和参数校验；Service 负责权限、状态和事务�
 2. 所有 POST、PUT、PATCH 请求，包括登录和公开表单，携带该 Cookie 和 `X-CSRF-Token`。
 3. `POST /auth/login` 校验管理员邮箱和密码，成功后更换 Session ID，返回用户资料及**新的** CSRF token；前端替换旧 token。
 4. `GET /auth/me` 用于后台刷新恢复登录状态；无登录状态返回 401。
-5. `/admin/**` 在服务端强制检查 admin 权限。只有匿名 CSRF Session 并不具备管理员权限。
+5. `/admin/**` 在服务端强制检查 admin 权限；经销商认证接口使用独立的 dealer 权限。只有匿名 CSRF Session 并不具备登录权限。
 6. `POST /auth/logout` 使 Session 失效，清除 Cookie；重新提交表单或登录前再次获取 CSRF token。
 
 Cookie 使用 HttpOnly、SameSite=Lax、Path=/；HTTPS 环境使用 Secure，本机 HTTP 开发环境单独配置。Session 闲置 30 分钟失效，登录后绝对有效期不超过 8 小时。CSRF token 不写入 URL；登录凭据不写入浏览器 localStorage。单实例首版允许服务重启后重新登录，业务数据不受影响。
 
-登录错误不区分账号不存在和密码错误。管理员由初始化流程创建，初始密码从环境配置读入并进行自适应哈希，代码和文档不包含固定密码。MFA 和管理员账号管理界面不在本轮范围内。
+登录错误不区分账号不存在和密码错误。管理员由初始化流程创建；经销商由批准申请自动创建。初始密码从环境配置读入，用户密码使用 BCrypt；激活令牌只保存 SHA-256 摘要。代码和文档不包含固定密码。MFA 和管理员账号管理界面不在本轮范围内。
 
 ### 4.4 写入、并发与重复提交
 
 - PATCH 为字段级部分更新；省略字段保持原值，数组整体替换。除模型明确允许外不接受 null；清空可选文本使用 `""`，清空可选集合使用 `[]`。
 - 所有后台 PATCH 以及首页 PUT 必须提交当前 `version`；更新成功版本加 1。条件 `WHERE id = ? AND version = ?` 未命中时区分 404 和 409，防止覆盖他人修改。PATCH 除 version 外至少包含一个可写字段。
-- `POST /forms/contact` 与 `POST /dealer/applications` 必须携带 UUID 格式的 `Idempotency-Key`。同一路径同一 key、同一规范化请求在 24 小时内重试，返回原 HTTP 201 和原回执，不新增数据；响应 `request_id` 可以不同。
+- `POST /forms/contact`、`POST /dealer/applications` 与 `POST /orders` 必须携带 UUID 格式的 `Idempotency-Key`。同一路径同一 key、同一规范化请求在 24 小时内重试，返回原 HTTP 201 和原回执，不新增数据；响应 `request_id` 可以不同。
 - 同一 key 改变请求体返回 409 `IDEMPOTENCY_CONFLICT`。首次提交和幂等记录原子提交；并发重复请求只允许一次写入。只保存回执和请求摘要，不在幂等表重复保存表单个人信息。
 - 不同 key 的申请，如果邮箱与规范化公司名均相同且存在未关闭申请，返回 409 `APPLICATION_ALREADY_OPEN`，不返回已有申请详情。公司名比较去除首尾空白、合并连续空白并忽略大小写；邮箱去除首尾空白并转小写。
 - 登录按邮箱+IP 限制 15 分钟内 5 次失败；公开表单按 IP 合计每分钟 5 次新提交；已命中的有效幂等重试不消耗新提交额度。超限 429 返回 `Retry-After` 秒数。
@@ -160,6 +169,8 @@ Cookie 使用 HttpOnly、SameSite=Lax、Path=/；HTTPS 环境使用 Secure，本
 | 409 | SLUG_LOCKED | 曾发布资源试图修改 slug |
 | 409 | IDEMPOTENCY_CONFLICT / APPLICATION_ALREADY_OPEN | 重复提交冲突、已有待处理合作申请 |
 | 409 | PRIVACY_VERSION_CHANGED | 表单同意的隐私版本已经变更 |
+| 409 | ORDER_NOT_PAYABLE / ORDER_EXPIRED | 订单状态不允许支付、待支付订单已超时 |
+| 400 / 410 | ACTIVATION_INVALID / ACTIVATION_EXPIRED | 经销商激活链接无效、已使用或已过期 |
 | 413 | PAYLOAD_TOO_LARGE | 文件或请求超过大小限制 |
 | 415 | UNSUPPORTED_MEDIA_TYPE | 上传格式或请求 Content-Type 不支持 |
 | 422 | VALIDATION_ERROR | 字段、引用、筛选或发布完整性校验失败 |
@@ -173,7 +184,7 @@ Cookie 使用 HttpOnly、SameSite=Lax、Path=/；HTTPS 环境使用 Secure，本
 
 ### 5.1 产品与分类
 
-首版一个产品对应一个 SKU，不实现变体、价格和库存。产品公开状态只有 active；草稿、隐藏、归档资源通过公开详情均返回 404。公开列表、详情、首页、意向产品选项必须使用相同可见性条件。
+首版一个产品对应一个 SKU 和一个人民币价格，不实现变体和库存。金额使用整数分保存。产品公开状态只有 active；草稿、隐藏、归档资源通过公开详情均返回 404。公开列表、详情、首页、意向产品和下单入口必须使用相同可见性条件。
 
 状态允许：`draft → active/archived`、`active → hidden/archived`、`hidden → active/archived`、`archived → draft`。相同状态保存允许。创建默认 draft。
 
@@ -195,11 +206,21 @@ SKU 全局唯一；slug 唯一且只允许小写字母、数字、连字符。�
 
 联系类型只包含 `general`、`product_question`、`dealer_inquiry`、`media_business`；不包含尚未实现的订单支持。产品问题必填 active 产品 ID，其他类型可选。国家使用两位大写国家代码，邮箱和文本均在服务端校验。`privacy_consent` 必须 true，`privacy_version` 与 `GET /site` 当前版本一致；服务端记录同意时间，不接收客户端伪造的处理状态。
 
-联系咨询状态：`new → in_progress/closed`、`in_progress → resolved/closed`、`resolved → in_progress/closed`；closed 为终态。关闭/解决需要非空内部备注。合作申请状态：`submitted → under_review/closed`、`under_review → closed`；closed 为终态。关闭合作申请需填 `outcome=follow_up/not_fit` 和内部备注；其他状态 outcome 为空字符串。follow_up 表示转入人工商务洽谈，不表示系统已授予经销商权限。
+联系咨询状态：`new → in_progress/closed`、`in_progress → resolved/closed`、`resolved → in_progress/closed`；closed 为终态。关闭/解决需要非空内部备注。合作申请状态：`submitted → under_review/closed`、`under_review → closed`；closed 为终态。关闭合作申请需填 `outcome=follow_up/not_fit` 和内部备注；其他状态 outcome 为空字符串。`follow_up` 表示批准并开通账号，`not_fit` 表示拒绝。
+
+批准申请时创建 `pending_activation` 经销商账号和 48 小时一次性链接。`POST /dealer/auth/activate` 接收 `token` 与 12–72 位密码，成功后状态改为 `active` 并清除令牌摘要。`POST /dealer/auth/login` 接收邮箱与密码，使用独立 Session 身份进入 `/dealers/portal`。激活与账号创建、申请关闭、审计和激活邮件写入处于同一事务。
 
 提交回执只返回不可枚举的随机编号（前缀 CT/DA + UUID）、固定初始状态和接收时间，不返回数据库 ID。首版不提供公开按编号查询功能；后台详情只对管理员开放。表单页面应提示妥善保存回执，通过公开联系方式继续沟通。
 
-### 5.4 图片与审计
+### 5.4 订单与支付
+
+公开订单创建只接受已发布产品，数量为 1–20；服务端重新读取当前价格并计算金额，不信任浏览器提交的名称、SKU 或价格。订单保存商品名称、SKU、单价和数量快照，创建后 30 分钟内可支付。订单号和随机访问令牌共同保护公开订单详情，数据库只保存令牌 SHA-256 摘要。
+
+订单状态为 `pending_payment → paid → processing → shipped → completed`。待支付订单可以取消；已支付、处理中、已发货或已完成订单可以执行演示退款。支付状态为 `unpaid/paid/refunded`。模拟银行卡、支付宝和微信支付只写入成功流水，不收集任何真实支付凭据或产生真实扣款；支付与订单状态更新在同一事务中完成，重复点击不会生成第二条成功流水。
+
+后台可按订单号、客户姓名或邮箱查询订单，可按支付流水号、订单号或网关参考号查询支付。真实支付上线时必须替换模拟适配器，并实现服务端回调验签、金额核对、密钥托管和退款对账。
+
+### 5.5 图片与审计
 
 后台仅上传 JPEG、PNG、WebP，单文件 ≤ 5 MiB，像素总量 ≤ 2000 万；图片扩展名、声明类型和实际解码结果均校验。存储名称由服务端生成，拒绝 SVG/HTML 和路径穿越。上传返回的图片已经转为可公开显示的资源；本接口不接收企业证件或私有文件。图片字段只引用已上传的 media_id，公开 URL 由服务端生成，不接收用户指定的服务器路径。
 
@@ -213,7 +234,7 @@ SKU 全局唯一；slug 唯一且只允许小写字母、数字、连字符。�
 | --- | --- | --- |
 | `admin_user` | id, email, password_hash, display_name, status, created_at | email 唯一；首版 role 固定 admin |
 | `category` | id, name, slug, description, enabled, sort_order, version, created_at, updated_at | slug 唯一；enabled + sort_order |
-| `product` | id, category_id, sku, slug, name, short_description, description_markdown, age_min/max, environments JSON, features JSON, specifications JSON, seo JSON, featured, status, first_published_at, version, created_at, updated_at | sku/slug 各自唯一；category_id 外键；status + category_id + created_at；age_min/max 校验 |
+| `product` | id, category_id, sku, slug, name, price_cents, currency, short_description, description_markdown, age_min/max, environments JSON, features JSON, specifications JSON, seo JSON, featured, status, first_published_at, version, created_at, updated_at | sku/slug 各自唯一；category_id 外键；金额和币种校验 |
 | `product_image` | product_id, media_id, alt, sort_order | product_id + sort_order 唯一；两个外键；同一图片允许多处使用 |
 | `content` | id, type, slug, title, excerpt, body_markdown, cover_media_id 可空, cover_alt, seo JSON, status, is_system, first_published_at, version, created_at, updated_at | slug 唯一；cover_media_id 外键；type + status + created_at |
 | `faq` | id, question, answer, group_name, enabled, sort_order, version, created_at, updated_at | enabled + sort_order |
@@ -222,7 +243,12 @@ SKU 全局唯一；slug 唯一且只允许小写字母、数字、连字符。�
 | `home_config` | id 固定 1, config JSON, version, created_at, updated_at | 单例约束；写入时验证图片与产品引用 |
 | `contact_inquiry` | id, reference, name, email, country, type, subject, message, product_id 可空, privacy_version, consent_at, status, internal_note, version, created_at, updated_at | reference 唯一；product_id 外键；status + created_at |
 | `dealer_application` | id, reference, company_name, company_key, contact_name, email, phone, country, website, business_type, message, privacy_version, consent_at, status, outcome, internal_note, open_dedupe_key 可空, version, created_at, updated_at | reference 唯一；open_dedupe_key 唯一；status + created_at |
+| `dealer_account` | application_id, email, password_hash, company_name, contact_name, status, activation_token_hash, activation_expires_at, activated_at, last_login_at | email/application_id/令牌摘要唯一；application_id 外键 |
+| `email_outbox` | recipient_email, subject, body_text, template_name, related_type/id, status, attempts, next_attempt_at, sent_at, last_error | 发送状态与下次尝试时间索引；收件邮箱与时间索引 |
 | `dealer_application_product` | application_id, product_id | 联合主键；两个外键 |
+| `customer_order` | order_number, access_token_hash, customer_name, email, phone, shipping_address JSON, currency, subtotal_cents, shipping_cents, total_cents, status, payment_status, expires_at, paid_at, internal_note | order_number 唯一；状态与创建时间索引 |
+| `order_item` | order_id, product_id, product_name, sku, unit_price_cents, quantity, line_total_cents | 订单和产品外键；数量与金额校验 |
+| `payment_record` | order_id, payment_number, method, amount_cents, currency, status, provider_reference, paid_at | payment_number 唯一；订单外键 |
 | `idempotency_record` | id, endpoint, key_value, request_hash, http_status, response_data JSON, expires_at, created_at | endpoint + key_value 唯一；expires_at 索引 |
 | `audit_log` | id, actor_id, action, entity_type, entity_id, before_data JSON, after_data JSON, request_id, created_at | created_at、entity_type + entity_id；actor_id 外键 |
 
@@ -232,9 +258,11 @@ SKU 全局唯一；slug 唯一且只允许小写字母、数字、连字符。�
 
 1. 产品创建/编辑/发布：产品、图片关系、版本和审计一起成功或回滚。产品发布/编辑与分类停用采用一致的分类行锁顺序，避免并发校验通过后出现“启用产品关联停用分类”的状态。
 2. 合作申请/联系提交：业务记录、关联产品和幂等回执一起成功或回滚；重复键异常转换为约定的重放响应或 409。
-3. 线索状态更新：读取并检查原状态，使用版本条件更新，合作申请关闭同步清空 open_dedupe_key，最后写审计。
+3. 线索状态更新：读取并检查原状态，使用版本条件更新；申请获批时同步清空去重键、创建经销商账号、激活邮件和审计，任一步失败均回滚。
 4. 内容、分类、FAQ、首页和站点设置更新：乐观锁、引用校验和审计在同一事务中完成。
 5. 图片：先在临时目录完成校验/转换，再写入最终目录与数据库元信息；数据库写入失败要补偿删除本次孤立文件，不能返回一个不存在的 URL。
+6. 订单与支付：创建订单、商品快照和订单邮件一起提交；模拟支付流水、订单已支付状态和付款邮件一起提交；演示退款同时更新支付流水与订单支付状态。
+7. 邮件发送：业务事务只写 `email_outbox`；SMTP 后台任务独立发送并更新 sent/failed、次数与错误，避免 SMTP 故障丢失业务数据。
 
 MyBatis 使用参数绑定 `#{...}`；分页 offset 由已验证 page/page_size 在服务端计算，不能由客户端直接传原始 SQL。JSON 列由专用 TypeHandler 映射；时间、ID、枚举在 DTO 与 Entity 之间显式转换。事务放在 Service 的 `@Transactional` 边界，错误统一进入 `@RestControllerAdvice`。
 
@@ -305,10 +333,11 @@ Idempotency-Key: 447d34f2-75f5-4c47-9ead-11166917ab89
 
 完成首版时至少验收：
 
-- 配置数据库、管理员初始凭据和图片目录后，按照 README 启动即可浏览所有已选页面；无需支付、邮件等外部服务密钥。
+- 配置数据库、管理员初始凭据和图片目录后，按照 README 启动即可浏览所有已选页面；演示支付无需外部服务密钥。
 - 后台新增产品、上传图片并发布，前台列表、详情和首页正确显示；隐藏/归档后各公开入口一致移除。
 - 分类、文章、FAQ、首页、站点配置可以通过后台维护，刷新和服务重启后数据不丢失。
 - 游客可以筛选、分页、打开文章、提交咨询和合作申请，并收到真实持久化后的编号；后台能找到同一条记录并完成处理。
+- 游客可以从产品详情创建订单、使用私有链接查询并完成模拟支付；后台能找到订单和支付流水并推进履约或演示退款。
 - 无管理员权限访问后台得到 401/403；伪造 CSRF、错误字段、非法状态、过期 version 均被服务端拒绝。
 - 相同幂等 key 的并发提交只产生一条记录；不同 key 的同企业待处理合作申请受唯一约束保护。
 - 图片超限和伪装格式被拒绝；所有公开图片能在重启后继续访问；业务变更有审计记录。
@@ -320,7 +349,7 @@ Idempotency-Key: 447d34f2-75f5-4c47-9ead-11166917ab89
 
 ## 9. 接口参考
 
-共 **43 个 HTTP 操作**。以下所有路径均相对于 `/api/v1`。成功响应统一套用第 4 节信封，表中返回模型指 `data`，不是省略信封的裸 JSON。
+共 **50 个 HTTP 操作**。以下所有路径均相对于 `/api/v1`。成功响应统一套用第 4 节信封，表中返回模型指 `data`，不是省略信封的裸 JSON。
 
 | 方法 | 路径 | 功能 | 身份 |
 | --- | --- | --- | --- |
@@ -339,6 +368,9 @@ Idempotency-Key: 447d34f2-75f5-4c47-9ead-11166917ab89
 | GET | `/faqs` | FAQ 列表 | 公开 |
 | POST | `/forms/contact` | 提交联系咨询 | 公开 |
 | POST | `/dealer/applications` | 提交经销商合作申请 | 公开 |
+| POST | `/orders` | 创建待支付订单 | 公开 |
+| GET | `/orders/{number}` | 使用私有令牌查询订单 | 公开 |
+| POST | `/orders/{number}/payments` | 完成演示支付 | 公开 |
 | GET | `/admin/dashboard` | 业务概览 | 管理员 |
 | GET | `/admin/products` | 后台产品列表 | 管理员 |
 | POST | `/admin/products` | 创建产品草稿 | 管理员 |
@@ -360,6 +392,10 @@ Idempotency-Key: 447d34f2-75f5-4c47-9ead-11166917ab89
 | PATCH | `/admin/site` | 编辑站点设置 | 管理员 |
 | GET | `/admin/media` | 图片库 | 管理员 |
 | POST | `/admin/media` | 上传公开图片 | 管理员 |
+| GET | `/admin/orders` | 订单列表 | 管理员 |
+| GET | `/admin/orders/{id}` | 订单详情 | 管理员 |
+| PATCH | `/admin/orders/{id}` | 履约、取消或演示退款 | 管理员 |
+| GET | `/admin/payments` | 支付流水列表 | 管理员 |
 | GET | `/admin/inquiries` | 联系咨询列表 | 管理员 |
 | GET | `/admin/inquiries/{id}` | 联系咨询详情 | 管理员 |
 | PATCH | `/admin/inquiries/{id}` | 处理联系咨询 | 管理员 |

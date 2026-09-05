@@ -35,6 +35,15 @@ app:
   admin-email: ${ADMIN_EMAIL:admin@example.com}
   admin-password: ${ADMIN_PASSWORD:}
   upload-dir: ${UPLOAD_DIR:./data/uploads}
+  public-base-url: ${PUBLIC_BASE_URL:http://127.0.0.1:${SERVER_PORT:8080}}
+  mail:
+    smtp-host: ${SMTP_HOST:}
+    smtp-port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    from: ${MAIL_FROM:no-reply@wemove.local}
+    starttls: ${SMTP_STARTTLS:true}
+    poll-interval-ms: ${MAIL_POLL_INTERVAL_MS:5000}
 logging:
   level:
     root: INFO

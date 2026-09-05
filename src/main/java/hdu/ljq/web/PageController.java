@@ -13,9 +13,14 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 public class PageController {
   private final CatalogService c;
+  private final CommerceService commerce;
+  private final DealerAccountService dealers;
 
-  public PageController(CatalogService c) {
+  public PageController(
+      CatalogService c, CommerceService commerce, DealerAccountService dealers) {
     this.c = c;
+    this.commerce = commerce;
+    this.dealers = dealers;
   }
 
   private void base(Model m, String title, String current) {
@@ -51,6 +56,28 @@ public class PageController {
     m.addAttribute("description", p.path("seo").path("description").asText());
     m.addAttribute("product", map(p));
     return "product";
+  }
+
+  @GetMapping("/checkout")
+  public String checkout(@RequestParam String product_id, Model m) {
+    base(m, "Checkout", "products");
+    m.addAttribute("product", commerce.checkoutProduct(product_id));
+    m.addAttribute(
+        "countries",
+        Arrays.stream(Locale.getISOCountries())
+            .map(code -> Map.of("code", code, "name", Locale.of("", code).getDisplayCountry(Locale.ENGLISH)))
+            .sorted(java.util.Comparator.comparing(item -> item.get("name")))
+            .toList());
+    return "checkout";
+  }
+
+  @GetMapping("/orders/{number}")
+  public String order(
+      @PathVariable String number, @RequestParam String token, Model m) {
+    base(m, "Order " + number, "orders");
+    m.addAttribute("order", map(commerce.publicOrder(number, token)));
+    m.addAttribute("accessToken", token);
+    return "order";
   }
 
   @GetMapping("/play")
@@ -125,6 +152,36 @@ public class PageController {
             .sorted(java.util.Comparator.comparing(item -> item.get("name")))
             .toList());
     return "form";
+  }
+
+  @GetMapping("/dealers/activate")
+  public String dealerActivate(
+      @RequestParam(required = false, defaultValue = "") String token, Model m) {
+    base(m, "Activate dealer account", "dealers");
+    m.addAttribute("activationToken", token);
+    return "dealer-activate";
+  }
+
+  @GetMapping("/dealers/login")
+  public String dealerLogin(Model m) {
+    base(m, "Dealer sign in", "dealers");
+    return "dealer-login";
+  }
+
+  @GetMapping("/dealers/portal")
+  public String dealerPortal(HttpServletRequest request, Model m) {
+    Object id = request.getSession(false) == null
+        ? null
+        : request.getSession(false).getAttribute("dealerAccountId");
+    if (id == null) return "redirect:/dealers/login";
+    try {
+      base(m, "Dealer portal", "dealers");
+      m.addAttribute("dealerAccount", map(dealers.account(id.toString())));
+      return "dealer-portal";
+    } catch (ApiException e) {
+      request.getSession(false).invalidate();
+      return "redirect:/dealers/login";
+    }
   }
 
   @GetMapping({"/admin", "/admin/{page}"})

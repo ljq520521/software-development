@@ -100,7 +100,7 @@ public class CatalogService {
 
   public JsonNode site() {
     ObjectNode site = repo.find(EntityType.SITE, "1");
-    site.put("locale", "en").put("commerce_enabled", false).put("dealer_portal_enabled", false);
+    site.put("locale", "en").put("commerce_enabled", true).put("dealer_portal_enabled", true);
     return contract.output("Site", site);
   }
 
@@ -210,6 +210,10 @@ public class CatalogService {
   public void validate(EntityType t, ObjectNode d, ObjectNode old) {
     if (t == EntityType.PRODUCT) {
       ObjectNode cat = repo.find(EntityType.CATEGORY, d.path("category_id").asText());
+      if (d.path("price_cents").asLong() < 1 || d.path("price_cents").asLong() > 99_999_999)
+        throw ApiException.invalid("price_cents", "Enter a product price between ¥0.01 and ¥999,999.99.");
+      if (!d.path("currency").asText().equals("CNY"))
+        throw ApiException.invalid("currency", "Only CNY is supported in this version.");
       if (d.path("age_min").asInt() > d.path("age_max").asInt())
         throw ApiException.invalid("age_max", "Must be at least the minimum age.");
       boolean active = d.path("status").asText().equals("active");
