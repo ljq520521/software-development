@@ -210,6 +210,83 @@ document.querySelectorAll("[data-payment-method]").forEach((button) => {
   });
 });
 
+const dealerMessage = document.querySelector("#dealer-message");
+const showDealerMessage = (message, success = false) => {
+  if (!dealerMessage) return;
+  dealerMessage.textContent = message;
+  dealerMessage.className = "form-message visible" + (success ? " success" : "");
+  dealerMessage.focus();
+};
+const dealerActivation = document.querySelector("[data-dealer-activation]");
+dealerActivation?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const values = Object.fromEntries(new FormData(dealerActivation));
+  if (!values.token) return showDealerMessage("This activation link is incomplete.");
+  if (values.password !== values.confirm_password)
+    return showDealerMessage("The passwords do not match.");
+  const button = dealerActivation.querySelector("button");
+  button.disabled = true;
+  button.textContent = "Activating…";
+  try {
+    const response = await fetch("/api/v1/dealer/auth/activate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": await commerceToken(),
+      },
+      body: JSON.stringify({ token: values.token, password: values.password }),
+    });
+    const result = await response.json();
+    if (!response.ok) throw Error(commerceError(result));
+    dealerActivation.hidden = true;
+    showDealerMessage("Your account is active. You can now sign in.", true);
+  } catch (error) {
+    showDealerMessage(error.message || "Unable to activate the account.");
+    button.disabled = false;
+    button.textContent = "Activate account →";
+  }
+});
+
+const dealerLogin = document.querySelector("[data-dealer-login]");
+dealerLogin?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const button = dealerLogin.querySelector("button");
+  button.disabled = true;
+  button.textContent = "Signing in…";
+  try {
+    const response = await fetch("/api/v1/dealer/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": await commerceToken(),
+      },
+      body: JSON.stringify(Object.fromEntries(new FormData(dealerLogin))),
+    });
+    const result = await response.json();
+    if (!response.ok) throw Error(commerceError(result));
+    location.assign("/dealers/portal");
+  } catch (error) {
+    showDealerMessage(error.message || "Unable to sign in.");
+    button.disabled = false;
+    button.textContent = "Sign in →";
+  }
+});
+
+document.querySelector("[data-dealer-logout]")?.addEventListener("click", async (event) => {
+  event.currentTarget.disabled = true;
+  try {
+    const response = await fetch("/api/v1/dealer/auth/logout", {
+      method: "POST",
+      headers: { "X-CSRF-Token": await commerceToken() },
+    });
+    if (!response.ok) throw Error("Unable to sign out.");
+    location.assign("/dealers/login");
+  } catch (error) {
+    showDealerMessage(error.message);
+    event.currentTarget.disabled = false;
+  }
+});
+
 document.querySelectorAll(".filters").forEach((form) =>
   form.addEventListener("submit", () => {
     form.querySelectorAll("input,select").forEach((input) => {

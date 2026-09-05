@@ -14,10 +14,13 @@ import org.springframework.web.bind.annotation.*;
 public class PageController {
   private final CatalogService c;
   private final CommerceService commerce;
+  private final DealerAccountService dealers;
 
-  public PageController(CatalogService c, CommerceService commerce) {
+  public PageController(
+      CatalogService c, CommerceService commerce, DealerAccountService dealers) {
     this.c = c;
     this.commerce = commerce;
+    this.dealers = dealers;
   }
 
   private void base(Model m, String title, String current) {
@@ -149,6 +152,36 @@ public class PageController {
             .sorted(java.util.Comparator.comparing(item -> item.get("name")))
             .toList());
     return "form";
+  }
+
+  @GetMapping("/dealers/activate")
+  public String dealerActivate(
+      @RequestParam(required = false, defaultValue = "") String token, Model m) {
+    base(m, "Activate dealer account", "dealers");
+    m.addAttribute("activationToken", token);
+    return "dealer-activate";
+  }
+
+  @GetMapping("/dealers/login")
+  public String dealerLogin(Model m) {
+    base(m, "Dealer sign in", "dealers");
+    return "dealer-login";
+  }
+
+  @GetMapping("/dealers/portal")
+  public String dealerPortal(HttpServletRequest request, Model m) {
+    Object id = request.getSession(false) == null
+        ? null
+        : request.getSession(false).getAttribute("dealerAccountId");
+    if (id == null) return "redirect:/dealers/login";
+    try {
+      base(m, "Dealer portal", "dealers");
+      m.addAttribute("dealerAccount", map(dealers.account(id.toString())));
+      return "dealer-portal";
+    } catch (ApiException e) {
+      request.getSession(false).invalidate();
+      return "redirect:/dealers/login";
+    }
   }
 
   @GetMapping({"/admin", "/admin/{page}"})

@@ -100,7 +100,7 @@ public class CatalogService {
 
   public JsonNode site() {
     ObjectNode site = repo.find(EntityType.SITE, "1");
-    site.put("locale", "en").put("commerce_enabled", true).put("dealer_portal_enabled", false);
+    site.put("locale", "en").put("commerce_enabled", true).put("dealer_portal_enabled", true);
     return contract.output("Site", site);
   }
 

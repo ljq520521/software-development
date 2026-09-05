@@ -23,7 +23,9 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest(
     properties = {
       "spring.datasource.url=${TEST_DB_URL:jdbc:mysql://127.0.0.1:3306/wemove_sports_test?createDatabaseIfNotExist=true&connectionTimeZone=UTC}",
-      "app.upload-dir=./target/test-uploads"
+      "app.upload-dir=./target/test-uploads",
+      "app.mail.smtp-host=",
+      "app.public-base-url=http://127.0.0.1:8080"
     })
 @AutoConfigureMockMvc
 @Transactional
@@ -152,6 +154,19 @@ class BuildingBlockWebApplicationTests {
     JsonNode replay = form("/api/v1/forms/contact", contact, key, 201);
     assertEquals(first.path("data"), replay.path("data"));
     assertEquals(before + 1, repo.count(EntityType.INQUIRY));
+    assertEquals(
+        1,
+        jdbc.queryForObject(
+            "SELECT COUNT(*) FROM email_outbox WHERE template_name='contact_receipt' AND recipient_email=?",
+            Integer.class,
+            contact.path("email").asText()));
+    mvc.perform(
+            get("/api/v1/admin/email-outbox")
+                .session(session)
+                .param("q", contact.path("email").asText()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.total").value(1))
+        .andExpect(jsonPath("$.data.smtp_configured").value(false));
     contact.put("message", "Changed content for the same key.");
     assertEquals(
         "IDEMPOTENCY_CONFLICT",
@@ -208,8 +223,53 @@ class BuildingBlockWebApplicationTests {
             .put("version", 1)
             .put("status", "closed")
             .put("outcome", "follow_up")
-            .put("internal_note", "转入商务洽谈"),
+            .put("internal_note", "批准开通经销商账号"),
         200);
+    Map<String, Object> account =
+        jdbc.queryForMap("SELECT * FROM dealer_account WHERE application_id=?", Long.parseLong(id));
+    assertEquals("pending_activation", account.get("status"));
+    String activationBody =
+        jdbc.queryForObject(
+            "SELECT body_text FROM email_outbox WHERE template_name='dealer_account_activation' AND related_id=?",
+            String.class,
+            account.get("id"));
+    var matcher = java.util.regex.Pattern.compile("token=([A-Za-z0-9_-]+)").matcher(activationBody);
+    assertTrue(matcher.find());
+    String activationToken = matcher.group(1);
+    write(
+        "POST",
+        "/api/v1/dealer/auth/activate",
+        json.createObjectNode().put("token", activationToken).put("password", "DealerPassword!2026"),
+        200);
+    assertEquals(
+        "active",
+        jdbc.queryForObject(
+            "SELECT status FROM dealer_account WHERE id=?", String.class, account.get("id")));
+
+    MvcResult dealerCsrfResult =
+        mvc.perform(get("/api/v1/auth/csrf")).andExpect(status().isOk()).andReturn();
+    MockHttpSession dealerSession =
+        (MockHttpSession) dealerCsrfResult.getRequest().getSession();
+    String dealerCsrf = read(dealerCsrfResult).path("data").path("csrf_token").asText();
+    MvcResult dealerLogin =
+        mvc.perform(
+                post("/api/v1/dealer/auth/login")
+                    .session(dealerSession)
+                    .header("X-CSRF-Token", dealerCsrf)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        json.createObjectNode()
+                            .put("email", app.path("email").asText())
+                            .put("password", "DealerPassword!2026")
+                            .toString()))
+            .andExpect(status().isOk())
+            .andReturn();
+    mvc.perform(get("/api/v1/dealer/auth/me").session(dealerSession))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.company_name").value("Integration Partner"));
+    mvc.perform(get("/dealers/portal").session(dealerSession)).andExpect(status().isOk());
+    mvc.perform(get("/api/v1/admin/dashboard").session(dealerSession))
+        .andExpect(status().isForbidden());
     write(
         "PATCH",
         "/api/v1/admin/dealer-applications/" + id,
@@ -335,6 +395,12 @@ class BuildingBlockWebApplicationTests {
             .path("data");
     assertEquals("paid", paid.path("status").asText());
     assertEquals(1, paid.path("payments").size());
+    assertEquals(
+        2,
+        jdbc.queryForObject(
+            "SELECT COUNT(*) FROM email_outbox WHERE related_type='order' AND related_id=?",
+            Integer.class,
+            paid.path("id").asLong()));
     mvc.perform(get("/api/v1/admin/orders").session(session).param("q", number))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.data.total").value(1));
@@ -388,6 +454,7 @@ class BuildingBlockWebApplicationTests {
     } finally {
       executor.shutdownNow();
       executor.awaitTermination(10, java.util.concurrent.TimeUnit.SECONDS);
+      jdbc.update("DELETE FROM email_outbox WHERE recipient_email=?", body.path("email").asText());
       jdbc.update("DELETE FROM contact_inquiry WHERE email=?", body.path("email").asText());
       jdbc.update(
           "DELETE FROM idempotency_record WHERE endpoint='/forms/contact' AND key_value=?", key);

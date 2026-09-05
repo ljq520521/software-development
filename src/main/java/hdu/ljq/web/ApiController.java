@@ -18,12 +18,22 @@ public class ApiController {
   private final LeadService leads;
   private final MediaService media;
   private final CommerceService commerce;
+  private final DealerAccountService dealers;
+  private final EmailService emails;
 
-  public ApiController(CatalogService c, LeadService l, MediaService m, CommerceService commerce) {
+  public ApiController(
+      CatalogService c,
+      LeadService l,
+      MediaService m,
+      CommerceService commerce,
+      DealerAccountService dealers,
+      EmailService emails) {
     this.c = c;
     leads = l;
     media = m;
     this.commerce = commerce;
+    this.dealers = dealers;
+    this.emails = emails;
   }
 
   private Object ok(Object d, HttpServletRequest r) {
@@ -95,6 +105,7 @@ public class ApiController {
       @PathVariable String resource, @RequestParam Map<String, String> q, HttpServletRequest r) {
     if (resource.equals("orders") || resource.equals("payments"))
       return ok(commerce.adminList(resource.equals("payments"), q), r);
+    if (resource.equals("email-outbox")) return ok(emails.adminList(q), r);
     EntityType t = type(resource);
     return ok(
         t == EntityType.HOME || t == EntityType.SITE ? c.admin(t, "1") : c.list(t, q, true), r);
@@ -128,14 +139,15 @@ public class ApiController {
       HttpServletRequest r) {
     if (resource.equals("orders"))
       return ok(commerce.updateOrder(id, d, actor(r), ApiResponses.requestId(r)), r);
+    if (resource.equals("dealer-applications"))
+      return ok(dealers.reviewApplication(id, d, actor(r), ApiResponses.requestId(r)), r);
     EntityType t = type(resource);
     if (!Set.of(
             EntityType.PRODUCT,
             EntityType.CATEGORY,
             EntityType.CONTENT,
             EntityType.FAQ,
-            EntityType.INQUIRY,
-            EntityType.APPLICATION)
+            EntityType.INQUIRY)
         .contains(t)) throw ApiException.missing();
     return ok(c.update(t, id, d, actor(r), ApiResponses.requestId(r)), r);
   }

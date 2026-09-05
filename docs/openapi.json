@@ -50,6 +50,14 @@
     },
     {
       "name": "后台订单"
+    },
+    {
+      "name": "经销商认证",
+      "description": "经销商账号激活、登录和会话"
+    },
+    {
+      "name": "邮件通知",
+      "description": "管理员查看 MySQL 邮件任务与发送状态"
     }
   ],
   "paths": {
@@ -2170,7 +2178,7 @@
           "公开表单"
         ],
         "summary": "提交经销商合作申请",
-        "description": "合作线索模式；校验意向产品、当前隐私版本和未关闭重复申请。返回回执，不创建登录账号，不发送邮件。",
+        "description": "校验意向产品、当前隐私版本和未关闭重复申请；创建申请回执邮件。管理员批准后自动创建经销商账号和激活邮件。",
         "security": [
           {
             "SessionCookie": [],
@@ -7871,7 +7879,7 @@
           "后台线索"
         ],
         "summary": "跟进并关闭合作申请",
-        "description": "closed 必须有 outcome 和备注；闭环后释放未关闭申请去重键。只修改处理状态，不改变企业原始信息，不开通账号。",
+        "description": "closed 必须有 outcome 和备注；follow_up 表示批准并自动创建经销商账号与激活邮件，not_fit 表示拒绝并创建结果通知。",
         "security": [
           {
             "SessionCookie": [],
@@ -8906,6 +8914,263 @@
           }
         }
       }
+    },
+    "/dealer/auth/activate": {
+      "post": {
+        "operationId": "postDealerAuthActivate",
+        "tags": [
+          "经销商认证"
+        ],
+        "summary": "使用一次性链接激活经销商账号",
+        "description": "管理员批准申请后生成；令牌 48 小时有效且只能使用一次。",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DealerActivationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "data",
+                    "request_id"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "OK"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DealerAccount"
+                    },
+                    "request_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "令牌无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "令牌已过期",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "密码不符合要求",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "x-role": "public"
+      }
+    },
+    "/dealer/auth/login": {
+      "post": {
+        "operationId": "postDealerAuthLogin",
+        "tags": [
+          "经销商认证"
+        ],
+        "summary": "经销商登录",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DealerLoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "登录成功并轮换 Session"
+          },
+          "401": {
+            "description": "凭据错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "x-role": "public"
+      }
+    },
+    "/dealer/auth/me": {
+      "get": {
+        "operationId": "getDealerAuthMe",
+        "tags": [
+          "经销商认证"
+        ],
+        "summary": "当前经销商账号",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "code",
+                    "message",
+                    "data",
+                    "request_id"
+                  ],
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "OK"
+                      ]
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/DealerAccount"
+                    },
+                    "request_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未登录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "x-role": "dealer"
+      }
+    },
+    "/dealer/auth/logout": {
+      "post": {
+        "operationId": "postDealerAuthLogout",
+        "tags": [
+          "经销商认证"
+        ],
+        "summary": "经销商退出登录",
+        "security": [
+          {
+            "SessionCookie": [],
+            "CsrfToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "已退出"
+          },
+          "401": {
+            "description": "未登录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "x-role": "dealer"
+      }
+    },
+    "/admin/email-outbox": {
+      "get": {
+        "operationId": "getAdminEmailOutbox",
+        "tags": [
+          "邮件通知"
+        ],
+        "summary": "查看邮件任务",
+        "description": "支持 q、status、page、page_size。SMTP 未配置时 pending 邮件可用于本地验收。",
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "分页邮件任务"
+          },
+          "401": {
+            "description": "未登录",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "x-role": "admin"
+      }
     }
   },
   "components": {
@@ -8914,7 +9179,7 @@
         "type": "apiKey",
         "in": "cookie",
         "name": "WMSESSION",
-        "description": "匿名或管理员 Session。公开表单只需匿名 Session；admin 接口还需服务端认证为管理员。浏览器通过 Set-Cookie 自动接收。"
+        "description": "匿名、管理员或经销商 Session。公开写接口只需匿名 Session；受保护接口还会检查角色。"
       },
       "CsrfToken": {
         "type": "apiKey",
@@ -13273,6 +13538,153 @@
           },
           "total_pages": {
             "type": "integer"
+          }
+        }
+      },
+      "DealerActivationRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "token",
+          "password"
+        ],
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 32,
+            "maxLength": 128
+          },
+          "password": {
+            "type": "string",
+            "minLength": 12,
+            "maxLength": 72,
+            "format": "password"
+          }
+        }
+      },
+      "DealerLoginRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "maxLength": 72
+          }
+        }
+      },
+      "DealerAccount": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "email",
+          "company_name",
+          "contact_name",
+          "status",
+          "activated_at",
+          "last_login_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "company_name": {
+            "type": "string"
+          },
+          "contact_name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active"
+            ]
+          },
+          "activated_at": {
+            "type": "string"
+          },
+          "last_login_at": {
+            "type": "string"
+          }
+        }
+      },
+      "EmailOutboxRecord": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "id",
+          "recipient_email",
+          "subject",
+          "body_text",
+          "template_name",
+          "status",
+          "attempts",
+          "created_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "recipient_email": {
+            "type": "string",
+            "format": "email"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "body_text": {
+            "type": "string"
+          },
+          "template_name": {
+            "type": "string"
+          },
+          "related_type": {
+            "type": "string"
+          },
+          "related_id": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "sent",
+              "failed"
+            ]
+          },
+          "attempts": {
+            "type": "integer"
+          },
+          "last_error": {
+            "type": "string",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sent_at": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
           }
         }
       }

@@ -38,13 +38,19 @@ public class CommerceService {
   private final CatalogService catalog;
   private final RateLimiter limits;
   private final ObjectMapper json;
+  private final EmailService emails;
 
   public CommerceService(
-      CommerceMapper mapper, CatalogService catalog, RateLimiter limits, ObjectMapper json) {
+      CommerceMapper mapper,
+      CatalogService catalog,
+      RateLimiter limits,
+      ObjectMapper json,
+      EmailService emails) {
     this.mapper = mapper;
     this.catalog = catalog;
     this.limits = limits;
     this.json = json;
+    this.emails = emails;
   }
 
   public Map<String, Object> checkoutProduct(String value) {
@@ -139,6 +145,13 @@ public class CommerceService {
     ObjectNode result = orderJson(mapper.orderByNumber(order.get("order_number").toString()), true);
     result.put("access_token", token);
     catalog.repository().mapper.saveReceipt("/orders", key, requestHash, result.toString());
+    emails.orderCreated(
+        email,
+        customerName,
+        order.get("order_number").toString(),
+        token,
+        ((Number) order.get("id")).longValue(),
+        total);
     return result;
   }
 
@@ -175,7 +188,14 @@ public class CommerceService {
     mapper.insertPayment(payment);
     if (mapper.markPaid(((Number) order.get("id")).longValue(), Timestamp.from(Instant.now())) != 1)
       throw ApiException.conflict("ORDER_NOT_PAYABLE", "This order can no longer be paid.");
-    return orderJson(mapper.orderByNumber(number), true);
+    Map<String, Object> paid = mapper.orderByNumber(number);
+    emails.paymentReceived(
+        paid.get("email").toString(),
+        paid.get("customer_name").toString(),
+        number,
+        ((Number) paid.get("id")).longValue(),
+        ((Number) paid.get("total_cents")).longValue());
+    return orderJson(paid, true);
   }
 
   public ObjectNode adminList(boolean payments, Map<String, String> query) {

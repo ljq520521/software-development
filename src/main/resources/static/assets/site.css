@@ -164,6 +164,53 @@ nav a.active:after {
 .menu-button {
   display: none;
 }
+.dealer-auth-layout {
+  min-height: 620px;
+  display: grid;
+  place-items: center;
+  padding-top: 70px;
+  padding-bottom: 90px;
+  background: #f6f8fc;
+}
+.dealer-auth-card {
+  width: min(520px, calc(100% - 40px));
+  padding: 42px;
+  background: #fff;
+  border: 1px solid #dfe5ee;
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(20, 42, 79, 0.08);
+}
+.dealer-auth-card h1,
+.dealer-portal h1 {
+  margin: 18px 0 12px;
+}
+.dealer-auth-card form {
+  display: grid;
+  gap: 18px;
+  margin: 28px 0 22px;
+}
+.dealer-portal {
+  padding-top: 80px;
+  padding-bottom: 100px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 70px;
+}
+.dealer-account-panel {
+  padding: 36px;
+  border-radius: 8px;
+  background: #f6f8fc;
+}
+.dealer-account-panel dl div {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 20px;
+  padding: 13px 0;
+  border-bottom: 1px solid #dfe5ee;
+}
+.dealer-account-panel dt { color: #667085; }
+.dealer-account-panel dd { margin: 0; overflow-wrap: anywhere; }
+.dealer-account-panel .button { margin-top: 24px; }
 .hero {
   display: grid;
   grid-template-columns: 45% 55%;
@@ -1340,6 +1387,13 @@ footer {
     transition: none !important;
     scroll-behavior: auto !important;
   }
+}
+
+@media (max-width: 760px) {
+  .dealer-portal { grid-template-columns: 1fr; gap: 32px; padding-top: 45px; }
+  .dealer-auth-card { padding: 28px 22px; }
+  .dealer-account-panel { padding: 24px 20px; }
+  .dealer-account-panel dl div { grid-template-columns: 1fr; gap: 4px; }
 }
 
 .interest-field {

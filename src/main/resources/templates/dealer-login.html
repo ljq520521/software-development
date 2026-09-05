@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments :: head}"></head>
+  <body>
+    <header th:replace="~{fragments :: header}"></header>
+    <main class="container dealer-auth-layout">
+      <section class="dealer-auth-card">
+        <span class="eyebrow">PARTNER PORTAL</span>
+        <h1>Dealer sign in</h1>
+        <p>Use the email address from your approved partner application.</p>
+        <div id="dealer-message" class="form-message" role="alert" tabindex="-1"></div>
+        <form data-dealer-login>
+          <label class="field"><span>Email address *</span><input name="email" type="email" maxlength="254" autocomplete="username" required /></label>
+          <label class="field"><span>Password *</span><input name="password" type="password" maxlength="72" autocomplete="current-password" required /></label>
+          <button class="button primary" type="submit">Sign in →</button>
+        </form>
+        <a class="text-link" href="/dealers/apply">Apply to become a partner</a>
+      </section>
+    </main>
+    <footer th:replace="~{fragments :: footer}"></footer>
+  </body>
+</html>

@@ -1,17 +1,18 @@
 # WEMOVE SPORTS 网站
 
-基于 Java、Spring Boot、MyBatis 和 MySQL 的品牌网站，包含英文官网、订单与演示支付、中文管理后台和 REST API。前端使用 Thymeleaf 服务端渲染，页面、CSS、JavaScript 与后端一起打包；无需 npm，也不需要把前端单独部署到 Nginx。
+基于 Java、Spring Boot、MyBatis 和 MySQL 的品牌网站，包含英文官网、订单与演示支付、自动邮件、经销商账号与门户、中文管理后台和 REST API。前端使用 Thymeleaf 服务端渲染，页面、CSS、JavaScript 与后端一起打包；无需 npm，也不需要把前端单独部署到 Nginx。
 
 ## 1. 已实现功能
 
 - 官网：首页、产品搜索与分类/年龄/场景筛选、产品详情、玩法文章、品牌介绍、质量与安全、FAQ。
-- 表单：联系咨询、经销商合作申请，包含字段校验、隐私同意、提交回执、24 小时幂等和重复申请校验。
+- 表单与通知：联系咨询、经销商合作申请，包含字段校验、隐私同意、提交回执、24 小时幂等、重复申请校验和自动邮件任务。
+- 经销商账号：管理员批准申请后自动创建待激活账号和 48 小时一次性链接；经销商设置密码后登录独立门户。
 - 中文后台：管理员登录、产品/分类/文章/页面/FAQ 管理、首页与站点配置、图片上传、订单、支付流水、咨询和合作申请处理、操作审计。
 - 订单：产品定价、立即购买、收货信息校验、30 分钟待支付期限、商品与价格快照、私有令牌查询和履约状态流转。
 - 支付：演示银行卡、演示支付宝、演示微信支付、重复支付保护、支付流水查询和演示退款。
 - 权限与数据：BCrypt 密码、Session、CSRF、请求限流、版本冲突保护、事务和 MySQL 持久存储。
 
-初始产品、政策和活动照片均为标注过的演示内容，可通过后台替换。支付使用本地演示网关，不采集真实支付凭据，也不会产生真实扣款；自动邮件和经销商账号开通仍未实现。
+初始产品、政策和活动照片均为标注过的演示内容，可通过后台替换。支付使用本地演示网关，不采集真实支付凭据，也不会产生真实扣款。未配置 SMTP 时，邮件保存在 MySQL 并显示在后台“邮件队列”；配置 SMTP 后后台任务自动发送。
 
 ## 2. 订单与支付验收
 
@@ -21,6 +22,16 @@
 4. 登录 `/admin`，在“订单管理”中推进处理中、已发货、已完成或演示退款，在“支付流水”中查询支付记录。
 
 订单数据保存在 `customer_order`，商品快照保存在 `order_item`，支付流水保存在 `payment_record`。金额使用整数分保存。订单查询地址包含私有访问令牌；没有令牌时公开接口不返回客户和收货信息。
+
+
+### 自动邮件与经销商账号验收
+
+1. 提交联系表单、经销商申请或订单，在后台“邮件队列”查看自动生成的邮件；支付成功后还会生成付款确认邮件。
+2. 在“合作申请”详情中将状态设为“已关闭”，处理结论选择“批准并开通经销商账号”，填写备注并保存。
+3. 系统在 `dealer_account` 创建待激活账号，并在 `email_outbox` 生成激活邮件。打开正文中的 `/dealers/activate?token=...` 链接。
+4. 设置至少 12 位密码后，通过 `/dealers/login` 登录并进入 `/dealers/portal`。激活链接只能使用一次，48 小时后失效。
+
+SMTP 未配置时邮件保持 `pending`，适合本机和课程演示。生产部署在 `.env.docker` 中填写 `PUBLIC_BASE_URL`、`SMTP_HOST`、`SMTP_PORT`、`SMTP_USERNAME`、`SMTP_PASSWORD`、`MAIL_FROM` 和 `SMTP_STARTTLS`；发送失败每 5 分钟重试，最多 5 次。
 
 ## 3. 技术栈与目录
 
@@ -49,7 +60,7 @@
 └── src/
     ├── main/java/hdu/ljq/       # common、config、persistence、service、web
     ├── main/resources/
-    │   ├── schema.sql          # 16 张表的幂等初始化 SQL
+    │   ├── schema.sql          # 18 张表的幂等初始化 SQL
     │   ├── mapper/             # MyBatis SQL
     │   ├── templates/          # 前台、后台 HTML 模板
     │   ├── static/             # CSS、JS、示例图片及 OpenAPI
@@ -88,6 +99,7 @@ Compose 会先启动 MySQL，等实际数据库查询通过健康检查后再启
 | 官网 | [http://127.0.0.1:8081/](http://127.0.0.1:8081/) |
 | 管理后台 | [http://127.0.0.1:8081/admin](http://127.0.0.1:8081/admin) |
 | 合作申请 | [http://127.0.0.1:8081/dealers/apply](http://127.0.0.1:8081/dealers/apply) |
+| 经销商登录 | [http://127.0.0.1:8081/dealers/login](http://127.0.0.1:8081/dealers/login) |
 | 健康检查 | [http://127.0.0.1:8081/api/v1/health](http://127.0.0.1:8081/api/v1/health) |
 | OpenAPI JSON | [http://127.0.0.1:8081/api-spec.json](http://127.0.0.1:8081/api-spec.json) |
 
@@ -113,6 +125,10 @@ Compose 会先启动 MySQL，等实际数据库查询通过健康检查后再启
 | `MYSQL_ROOT_PASSWORD` | 独立随机生成的 MySQL root 密码 |
 | `COOKIE_SECURE` | 本机 HTTP 使用 `false`；HTTPS 部署使用 `true` |
 | `FORWARD_HEADERS_STRATEGY` | 默认 `none`；仅在应用端口只能由受信反向代理访问时改为 `framework` |
+| `PUBLIC_BASE_URL` | 邮件链接使用的公开地址，本机默认 `http://127.0.0.1:8081`，服务器应设为 HTTPS 域名 |
+| `SMTP_HOST` / `SMTP_PORT` | SMTP 地址；HOST 留空表示只保存 MySQL 邮件队列 |
+| `SMTP_USERNAME` / `SMTP_PASSWORD` | SMTP 登录凭据，不提交到 Git |
+| `MAIL_FROM` / `SMTP_STARTTLS` | 发件地址及 STARTTLS 开关 |
 
 已有 MySQL 数据卷时，改 `MYSQL_PASSWORD` / `MYSQL_ROOT_PASSWORD` 不会修改数据库中的密码；应先在 MySQL 中更改密码，再同步配置。不要为修改密码删除数据卷。
 
@@ -134,6 +150,8 @@ Docker 模式创建独立 MySQL 容器，库名为 **`wemove_sports`**。它和�
 | `media_asset` | 图片路径与元信息 |
 | `contact_inquiry` | 联系咨询表单 |
 | `dealer_application` | 经销商合作申请表单 |
+| `dealer_account` | 经销商登录账号、BCrypt 密码摘要和激活状态 |
+| `email_outbox` | 自动邮件正文、关联业务、发送状态、次数和错误 |
 | `audit_log` | 管理操作记录 |
 | `idempotency_record` | 表单重试幂等记录 |
 | `app_lock` | 事务中的业务写锁 |
@@ -238,7 +256,7 @@ IDEA 用户以根目录 `pom.xml` 导入，Project SDK 选择 JDK 21+。直接�
 ./mvnw -DskipTests package
 ```
 
-测试共 9 项，覆盖登录与权限、CSRF、产品发布与版本冲突、表单幂等与并发重试、合作申请状态、订单创建与私有查询、模拟支付、后台订单处理、图片校验、内容发布和首页配置。普通业务测试事务回滚，并发测试清理自己的数据；不要将 `TEST_DB_URL` 指向业务数据库。测试账号需具备创建和维护独立测试数据库的权限，Compose 的 `wemove` 用户仅供业务使用。
+测试共 9 项，覆盖管理员与经销商登录、角色隔离、CSRF、产品发布与版本冲突、表单幂等与并发重试、自动邮件任务、经销商账号开通与一次性激活、订单创建与私有查询、模拟支付、后台订单处理、图片校验、内容发布和首页配置。普通业务测试事务回滚，并发测试清理自己的数据；不要将 `TEST_DB_URL` 指向业务数据库。测试账号需具备创建和维护独立测试数据库的权限，Compose 的 `wemove` 用户仅供业务使用。
 
 产物为 `target/building-block-web-1.0.0.jar`。本机手动运行 JAR：
 

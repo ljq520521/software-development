@@ -15,10 +15,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class LeadService {
   private final CatalogService catalog;
   private final RateLimiter limits;
+  private final EmailService emails;
 
-  public LeadService(CatalogService c, RateLimiter limits) {
+  public LeadService(CatalogService c, RateLimiter limits, EmailService emails) {
     this.catalog = c;
     this.limits = limits;
+    this.emails = emails;
   }
 
   @Transactional
@@ -88,7 +90,8 @@ public class LeadService {
         .put("internal_note", "")
         .put("consent_at", now);
     d.remove("privacy_consent");
-    catalog.repository().create(dealer ? EntityType.APPLICATION : EntityType.INQUIRY, d);
+    ObjectNode created =
+        catalog.repository().create(dealer ? EntityType.APPLICATION : EntityType.INQUIRY, d);
     ObjectNode receipt =
         catalog
             .json()
@@ -97,6 +100,18 @@ public class LeadService {
             .put("status", state)
             .put("received_at", now);
     catalog.repository().mapper.saveReceipt(endpoint, key, hash, receipt.toString());
+    if (dealer)
+      emails.dealerReceipt(
+          d.path("email").asText(),
+          d.path("contact_name").asText(),
+          reference,
+          created.path("id").asLong());
+    else
+      emails.contactReceipt(
+          d.path("email").asText(),
+          d.path("name").asText(),
+          reference,
+          created.path("id").asLong());
     return receipt;
   }
 

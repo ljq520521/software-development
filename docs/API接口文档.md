@@ -1,6 +1,6 @@
 # WEMOVE SPORTS 首版接口文档
 
-版本：v1.0 · 日期：2026-09-04 · 状态：首版已实现；Java 项目位于 Building-block-web/Building-block-web
+版本：v1.1 · 日期：2026-09-05 · 状态：已实现；Java 项目位于 Building-block-web/Building-block-web
 
 依据：《选题1 网站重构需求.docx》及用户允许按需取舍的要求。后端确定使用 **Java + Spring Boot + MyBatis**，数据库使用 **MySQL**。本文件定义首版开发合同；原需求中的“全部必须实现”不作为本轮交付范围。
 
@@ -16,18 +16,19 @@
 | 产品中心 | 分类、关键词/SKU 搜索、年龄和室内/户外筛选、排序、分页、详情、图片、规格 | 4.3、4.4、14.2 |
 | 内容与支持 | 玩法文章列表/详情、支持页、FAQ | 4.6、4.9、10.1 |
 | 联系咨询 | 表单校验、提交编号、后台跟进、内部备注、关闭 | 4.10、7.12 |
-| 经销商合作申请 | 企业信息、意向产品、提交编号、后台评估与跟进 | 4.8、7.8 的线索部分 |
+| 经销商合作申请 | 企业信息、意向产品、提交编号、后台评估、批准后自动开通账号、激活与登录门户 | 4.8、7.8 |
+| 自动邮件 | 咨询/申请回执、订单/付款确认、经销商激活通知；MySQL Outbox 与 SMTP 重试 | 7.12、8.5 |
 | 订单与支付 | 产品定价、结算、订单快照、私有查询、演示支付、后台状态处理和演示退款 | 新增完整业务闭环 |
 | 管理后台 | 管理员登录、概览、产品/分类/文章/页面/FAQ 管理、首页与品牌设置、图片上传 | 7.2、7.3、7.4、7.10、7.11、7.14 |
 | 基础工程 | 服务端权限、分页、统一错误、限流、审计、乐观锁、健康检查 | 2.2、15.3、16、17 |
 
-首版明确暂缓：普通用户注册/收藏、购物车、库存、真实第三方支付网关、经销商账号和专属目录、报价、地图、文件下载、邮件/短信、资质附件、MFA、多角色权限配置、多语言/多市场、定时发布、复杂搜索推荐及第三方系统集成。
+首版明确暂缓：普通用户注册/收藏、购物车、库存、真实第三方支付网关、经销商专属价格与报价、地图、文件下载、短信、资质附件、MFA、复杂多角色权限配置、多语言/多市场、定时发布、复杂搜索推荐及第三方系统集成。
 
 这些取舍直接影响页面行为：
 
 - 产品展示人民币售价，并提供 **Buy now** 入口；仍保留产品咨询。支付页面为明确标识的本地演示网关，不采集真实银行卡或第三方支付凭据。
-- 经销商申请采用**合作线索模式**，不采用原文中“审核通过后自动开通经销商企业和账号”的流程。后台记录是否值得继续洽谈，不授予经销商身份。
-- 提交成功只显示“已收到申请/咨询”和编号；页面不能显示“邮件已发送”。工作人员通过已有业务联系方式人工跟进，系统仅记录处理结果。
+- 经销商申请由管理员审核；选择 `follow_up` 表示批准，系统在同一事务中创建待激活账号和激活邮件。选择 `not_fit` 表示拒绝并创建结果通知邮件。
+- 咨询、合作申请、订单创建和支付成功都会写入 `email_outbox`。未配置 SMTP 时邮件保留在 MySQL；配置后后台任务自动发送并记录结果。
 - 前台默认英文、后台界面中文；业务内容只维护一份英文版本。后台菜单中文不代表接口数据自动翻译。
 - 原需求中的复杂功能不放置无法使用的按钮。暂不接收资质文件，也不提供私有文件功能。
 
@@ -46,6 +47,9 @@
 | `/support`、`/support/faq` | 支持与问答 | `GET /content/support`、`GET /faqs` |
 | `/contact` | 联系表单 | `POST /forms/contact` |
 | `/dealers/apply` | 合作申请 | `POST /dealer/applications` |
+| `/dealers/activate?token={token}` | 设置经销商密码并激活账号 | `POST /dealer/auth/activate` |
+| `/dealers/login` | 经销商登录 | `POST /dealer/auth/login` |
+| `/dealers/portal` | 经销商门户 | `GET /dealer/auth/me`、`POST /dealer/auth/logout` |
 | `/privacy`、`/terms` | 信息与同意说明 | `GET /content/{slug}` |
 | `/admin/login` | 后台登录 | `/auth/csrf`、`/auth/login` |
 | `/admin` | 后台概览 | `GET /admin/dashboard` |
@@ -54,6 +58,7 @@
 | `/admin/home`、`/admin/settings` | 首页与站点配置 | `/admin/home`、`/admin/site` |
 | `/admin/inquiries`、`/admin/dealer-applications` | 线索处理 | `/admin/inquiries`、`/admin/dealer-applications` |
 | `/admin/orders`、`/admin/payments` | 订单处理与支付流水 | `/admin/orders`、`/admin/payments` |
+| `/admin/email-outbox` | 查看邮件任务、正文、发送状态和错误 | `GET /admin/email-outbox` |
 | `/admin/audit-logs` | 操作历史 | `GET /admin/audit-logs` |
 
 上表接口路径均省略 `/api/v1` 前缀。分类使用 `/products?category=bowling`，避免原需求中 `/products/{category}` 与 `/products/{slug}` 的路由歧义。产品筛选条件保留在页面 URL，返回列表时恢复条件。不存在或未发布的公开内容返回 404，并展示有导航入口的错误页。文章只能由 `/play/{slug}` 展示；普通页面使用 `/pages/{slug}`，五个系统页面使用表中的固定路径，访问其 `/pages/{slug}` 别名时重定向到固定路径。
@@ -67,7 +72,7 @@
 | 数据访问 | MyBatis + MyBatis Spring Boot Starter 3.0.x，Mapper XML 管理 SQL |
 | 数据库 | MySQL 8.4、InnoDB、utf8mb4；开发时锁定具体补丁版本 |
 | 构建 | Maven，后续项目提供 Maven Wrapper |
-| 身份认证 | Spring Security + 服务端 Session，首版只有 `admin` 角色 |
+| 身份认证 | Spring Security + 服务端 Session，支持 `admin` 与 `dealer` 角色 |
 | 文件 | 本地持久目录存放公开图片，数据库保存元信息；路径通过配置指定 |
 | 文档 | REST JSON + OpenAPI 3.0.3 |
 
@@ -135,12 +140,12 @@ Controller 负责协议和参数校验；Service 负责权限、状态和事务�
 2. 所有 POST、PUT、PATCH 请求，包括登录和公开表单，携带该 Cookie 和 `X-CSRF-Token`。
 3. `POST /auth/login` 校验管理员邮箱和密码，成功后更换 Session ID，返回用户资料及**新的** CSRF token；前端替换旧 token。
 4. `GET /auth/me` 用于后台刷新恢复登录状态；无登录状态返回 401。
-5. `/admin/**` 在服务端强制检查 admin 权限。只有匿名 CSRF Session 并不具备管理员权限。
+5. `/admin/**` 在服务端强制检查 admin 权限；经销商认证接口使用独立的 dealer 权限。只有匿名 CSRF Session 并不具备登录权限。
 6. `POST /auth/logout` 使 Session 失效，清除 Cookie；重新提交表单或登录前再次获取 CSRF token。
 
 Cookie 使用 HttpOnly、SameSite=Lax、Path=/；HTTPS 环境使用 Secure，本机 HTTP 开发环境单独配置。Session 闲置 30 分钟失效，登录后绝对有效期不超过 8 小时。CSRF token 不写入 URL；登录凭据不写入浏览器 localStorage。单实例首版允许服务重启后重新登录，业务数据不受影响。
 
-登录错误不区分账号不存在和密码错误。管理员由初始化流程创建，初始密码从环境配置读入并进行自适应哈希，代码和文档不包含固定密码。MFA 和管理员账号管理界面不在本轮范围内。
+登录错误不区分账号不存在和密码错误。管理员由初始化流程创建；经销商由批准申请自动创建。初始密码从环境配置读入，用户密码使用 BCrypt；激活令牌只保存 SHA-256 摘要。代码和文档不包含固定密码。MFA 和管理员账号管理界面不在本轮范围内。
 
 ### 4.4 写入、并发与重复提交
 
@@ -165,6 +170,7 @@ Cookie 使用 HttpOnly、SameSite=Lax、Path=/；HTTPS 环境使用 Secure，本
 | 409 | IDEMPOTENCY_CONFLICT / APPLICATION_ALREADY_OPEN | 重复提交冲突、已有待处理合作申请 |
 | 409 | PRIVACY_VERSION_CHANGED | 表单同意的隐私版本已经变更 |
 | 409 | ORDER_NOT_PAYABLE / ORDER_EXPIRED | 订单状态不允许支付、待支付订单已超时 |
+| 400 / 410 | ACTIVATION_INVALID / ACTIVATION_EXPIRED | 经销商激活链接无效、已使用或已过期 |
 | 413 | PAYLOAD_TOO_LARGE | 文件或请求超过大小限制 |
 | 415 | UNSUPPORTED_MEDIA_TYPE | 上传格式或请求 Content-Type 不支持 |
 | 422 | VALIDATION_ERROR | 字段、引用、筛选或发布完整性校验失败 |
@@ -200,7 +206,9 @@ SKU 全局唯一；slug 唯一且只允许小写字母、数字、连字符。�
 
 联系类型只包含 `general`、`product_question`、`dealer_inquiry`、`media_business`；不包含尚未实现的订单支持。产品问题必填 active 产品 ID，其他类型可选。国家使用两位大写国家代码，邮箱和文本均在服务端校验。`privacy_consent` 必须 true，`privacy_version` 与 `GET /site` 当前版本一致；服务端记录同意时间，不接收客户端伪造的处理状态。
 
-联系咨询状态：`new → in_progress/closed`、`in_progress → resolved/closed`、`resolved → in_progress/closed`；closed 为终态。关闭/解决需要非空内部备注。合作申请状态：`submitted → under_review/closed`、`under_review → closed`；closed 为终态。关闭合作申请需填 `outcome=follow_up/not_fit` 和内部备注；其他状态 outcome 为空字符串。follow_up 表示转入人工商务洽谈，不表示系统已授予经销商权限。
+联系咨询状态：`new → in_progress/closed`、`in_progress → resolved/closed`、`resolved → in_progress/closed`；closed 为终态。关闭/解决需要非空内部备注。合作申请状态：`submitted → under_review/closed`、`under_review → closed`；closed 为终态。关闭合作申请需填 `outcome=follow_up/not_fit` 和内部备注；其他状态 outcome 为空字符串。`follow_up` 表示批准并开通账号，`not_fit` 表示拒绝。
+
+批准申请时创建 `pending_activation` 经销商账号和 48 小时一次性链接。`POST /dealer/auth/activate` 接收 `token` 与 12–72 位密码，成功后状态改为 `active` 并清除令牌摘要。`POST /dealer/auth/login` 接收邮箱与密码，使用独立 Session 身份进入 `/dealers/portal`。激活与账号创建、申请关闭、审计和激活邮件写入处于同一事务。
 
 提交回执只返回不可枚举的随机编号（前缀 CT/DA + UUID）、固定初始状态和接收时间，不返回数据库 ID。首版不提供公开按编号查询功能；后台详情只对管理员开放。表单页面应提示妥善保存回执，通过公开联系方式继续沟通。
 
@@ -235,6 +243,8 @@ SKU 全局唯一；slug 唯一且只允许小写字母、数字、连字符。�
 | `home_config` | id 固定 1, config JSON, version, created_at, updated_at | 单例约束；写入时验证图片与产品引用 |
 | `contact_inquiry` | id, reference, name, email, country, type, subject, message, product_id 可空, privacy_version, consent_at, status, internal_note, version, created_at, updated_at | reference 唯一；product_id 外键；status + created_at |
 | `dealer_application` | id, reference, company_name, company_key, contact_name, email, phone, country, website, business_type, message, privacy_version, consent_at, status, outcome, internal_note, open_dedupe_key 可空, version, created_at, updated_at | reference 唯一；open_dedupe_key 唯一；status + created_at |
+| `dealer_account` | application_id, email, password_hash, company_name, contact_name, status, activation_token_hash, activation_expires_at, activated_at, last_login_at | email/application_id/令牌摘要唯一；application_id 外键 |
+| `email_outbox` | recipient_email, subject, body_text, template_name, related_type/id, status, attempts, next_attempt_at, sent_at, last_error | 发送状态与下次尝试时间索引；收件邮箱与时间索引 |
 | `dealer_application_product` | application_id, product_id | 联合主键；两个外键 |
 | `customer_order` | order_number, access_token_hash, customer_name, email, phone, shipping_address JSON, currency, subtotal_cents, shipping_cents, total_cents, status, payment_status, expires_at, paid_at, internal_note | order_number 唯一；状态与创建时间索引 |
 | `order_item` | order_id, product_id, product_name, sku, unit_price_cents, quantity, line_total_cents | 订单和产品外键；数量与金额校验 |
@@ -248,10 +258,11 @@ SKU 全局唯一；slug 唯一且只允许小写字母、数字、连字符。�
 
 1. 产品创建/编辑/发布：产品、图片关系、版本和审计一起成功或回滚。产品发布/编辑与分类停用采用一致的分类行锁顺序，避免并发校验通过后出现“启用产品关联停用分类”的状态。
 2. 合作申请/联系提交：业务记录、关联产品和幂等回执一起成功或回滚；重复键异常转换为约定的重放响应或 409。
-3. 线索状态更新：读取并检查原状态，使用版本条件更新，合作申请关闭同步清空 open_dedupe_key，最后写审计。
+3. 线索状态更新：读取并检查原状态，使用版本条件更新；申请获批时同步清空去重键、创建经销商账号、激活邮件和审计，任一步失败均回滚。
 4. 内容、分类、FAQ、首页和站点设置更新：乐观锁、引用校验和审计在同一事务中完成。
 5. 图片：先在临时目录完成校验/转换，再写入最终目录与数据库元信息；数据库写入失败要补偿删除本次孤立文件，不能返回一个不存在的 URL。
-6. 订单与支付：创建订单和商品快照一起提交；模拟支付流水与订单已支付状态一起提交；演示退款同时更新支付流水与订单支付状态。
+6. 订单与支付：创建订单、商品快照和订单邮件一起提交；模拟支付流水、订单已支付状态和付款邮件一起提交；演示退款同时更新支付流水与订单支付状态。
+7. 邮件发送：业务事务只写 `email_outbox`；SMTP 后台任务独立发送并更新 sent/failed、次数与错误，避免 SMTP 故障丢失业务数据。
 
 MyBatis 使用参数绑定 `#{...}`；分页 offset 由已验证 page/page_size 在服务端计算，不能由客户端直接传原始 SQL。JSON 列由专用 TypeHandler 映射；时间、ID、枚举在 DTO 与 Entity 之间显式转换。事务放在 Service 的 `@Transactional` 边界，错误统一进入 `@RestControllerAdvice`。
 

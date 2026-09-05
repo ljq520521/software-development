@@ -173,6 +173,49 @@ CREATE TABLE IF NOT EXISTS dealer_application (
   KEY ix_dealer_application_status (status,created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS dealer_account (
+  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  version INT NOT NULL DEFAULT 1,
+  created_at DATETIME(3) NOT NULL,
+  updated_at DATETIME(3) NOT NULL,
+  application_id BIGINT NOT NULL,
+  email VARCHAR(191) NOT NULL,
+  password_hash VARCHAR(500) NULL,
+  company_name VARCHAR(200) NOT NULL,
+  contact_name VARCHAR(100) NOT NULL,
+  status VARCHAR(40) NOT NULL,
+  activation_token_hash CHAR(64) NULL,
+  activation_expires_at DATETIME(3) NULL,
+  activated_at DATETIME(3) NULL,
+  last_login_at DATETIME(3) NULL,
+  UNIQUE KEY uk_dealer_account_email (email),
+  UNIQUE KEY uk_dealer_account_application (application_id),
+  UNIQUE KEY uk_dealer_activation_token (activation_token_hash),
+  KEY ix_dealer_account_status (status, created_at),
+  CONSTRAINT fk_dealer_account_application FOREIGN KEY(application_id) REFERENCES dealer_application(id),
+  CHECK(status IN ('pending_activation','active','disabled'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS email_outbox (
+  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  created_at DATETIME(3) NOT NULL,
+  updated_at DATETIME(3) NOT NULL,
+  recipient_email VARCHAR(191) NOT NULL,
+  subject VARCHAR(300) NOT NULL,
+  body_text TEXT NOT NULL,
+  template_name VARCHAR(80) NOT NULL,
+  related_type VARCHAR(40) NOT NULL,
+  related_id BIGINT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'pending',
+  attempts INT NOT NULL DEFAULT 0,
+  next_attempt_at DATETIME(3) NOT NULL,
+  sent_at DATETIME(3) NULL,
+  last_error VARCHAR(1000) NULL,
+  KEY ix_email_outbox_delivery (status, next_attempt_at, id),
+  KEY ix_email_outbox_recipient (recipient_email, created_at),
+  CHECK(status IN ('pending','sent','failed'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS audit_log (
   id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   version INT NOT NULL DEFAULT 1,
@@ -187,7 +230,7 @@ CREATE TABLE IF NOT EXISTS audit_log (
   `request_id` VARCHAR(500) NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS app_lock (lock_name VARCHAR(40) PRIMARY KEY) ENGINE=InnoDB;
-INSERT IGNORE INTO app_lock VALUES ('catalog'),('leads'),('config'),('seed'),('commerce');
+INSERT IGNORE INTO app_lock VALUES ('catalog'),('leads'),('config'),('seed'),('commerce'),('dealers');
 CREATE TABLE IF NOT EXISTS idempotency_record (
  endpoint VARCHAR(100) NOT NULL, key_value VARCHAR(36) NOT NULL,
  request_hash VARCHAR(64) NOT NULL, response_data JSON NOT NULL,
