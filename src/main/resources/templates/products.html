@@ -1,93 +1,78 @@
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head th:replace="~{fragments :: head}"></head>
-  <body>
+  <body class="catalog-page">
     <header th:replace="~{fragments :: header}"></header>
-    <main class="container listing">
-      <div class="page-heading">
-        <span class="eyebrow">A WORLD OF ACTIVE PLAY</span>
-        <h1>Find their next<br />favorite thing.</h1>
-        <p>
-          Explore activities that bring movement, imagination and a little more
-          togetherness to every day.
-        </p>
+    <main>
+      <section class="catalog-hero container">
+        <div>
+          <span class="eyebrow"><i></i> THE WEMOVE COLLECTION</span>
+          <h1>Pick a set.<br />Invent the rest.</h1>
+        </div>
+        <div class="catalog-hero-note">
+          <strong>06</strong>
+          <p>play systems made to move from one idea to the next.</p>
+          <span>ROLL · BALANCE · JUMP · TOSS</span>
+        </div>
+      </section>
+
+      <div class="container catalog-layout">
+        <form action="/products" method="get" class="filters">
+          <div class="filter-heading">
+            <span class="eyebrow">FIND YOUR PLAY</span>
+            <a href="/products">Reset all</a>
+          </div>
+          <label class="field search-field">
+            <span>Search</span>
+            <input name="q" type="search" maxlength="100" placeholder="Try “bowling”" th:value="${filters['q']}" />
+          </label>
+          <label class="field">
+            <span>Activity</span>
+            <select name="category">
+              <option value="">All activities</option>
+              <option th:each="cat:${categories}" th:value="${cat.slug}" th:text="${cat.name}" th:selected="${filters['category']==cat.slug}"></option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Age</span>
+            <input name="age" type="number" min="0" max="99" placeholder="Any age" th:value="${filters['age']}" />
+          </label>
+          <label class="field">
+            <span>Place to play</span>
+            <select name="environment">
+              <option value="">Anywhere</option>
+              <option value="indoor" th:selected="${filters['environment']=='indoor'}">Indoor</option>
+              <option value="outdoor" th:selected="${filters['environment']=='outdoor'}">Outdoor</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Sort by</span>
+            <select name="sort">
+              <option value="featured">Featured first</option>
+              <option value="newest" th:selected="${filters['sort']=='newest'}">Newest</option>
+              <option value="name_asc" th:selected="${filters['sort']=='name_asc'}">Name A–Z</option>
+            </select>
+          </label>
+          <button class="button primary" type="submit">Show me the sets <span>↗</span></button>
+        </form>
+
+        <section class="catalog-results">
+          <div class="listing-top">
+            <span><strong th:text="${result.total}"></strong> products to discover</span>
+            <span>Product concepts pictured as described</span>
+          </div>
+          <div class="product-grid" th:if="${!#lists.isEmpty(result.items)}">
+            <th:block th:each="p:${result.items}"><th:block th:replace="~{fragments :: productCard(${p})}"></th:block></th:block>
+          </div>
+          <div class="empty" th:if="${#lists.isEmpty(result.items)}">
+            <span aria-hidden="true">↻</span>
+            <h2>Let's try another move.</h2>
+            <p>Change a filter or explore every activity in the collection.</p>
+            <a class="button primary" href="/products">See all products</a>
+          </div>
+          <div th:replace="~{fragments :: pagination(${result})}"></div>
+        </section>
       </div>
-      <form action="/products" method="get" class="filters">
-        <label class="field"
-          ><span>Search products</span
-          ><input
-            name="q"
-            type="search"
-            maxlength="100"
-            placeholder="Name or SKU"
-            th:value="${filters['q']}" /></label
-        ><label class="field"
-          ><span>Activity</span
-          ><select name="category">
-            <option value="">All activities</option>
-            <option
-              th:each="cat:${categories}"
-              th:value="${cat.slug}"
-              th:text="${cat.name}"
-              th:selected="${filters['category']==cat.slug}"
-            ></option></select></label
-        ><label class="field"
-          ><span>Age</span
-          ><input
-            name="age"
-            type="number"
-            min="0"
-            max="99"
-            placeholder="Any age"
-            th:value="${filters['age']}" /></label
-        ><label class="field"
-          ><span>Environment</span
-          ><select name="environment">
-            <option value="">Anywhere</option>
-            <option
-              value="indoor"
-              th:selected="${filters['environment']=='indoor'}"
-            >
-              Indoor
-            </option>
-            <option
-              value="outdoor"
-              th:selected="${filters['environment']=='outdoor'}"
-            >
-              Outdoor
-            </option>
-          </select></label
-        ><label class="field"
-          ><span>Sort by</span
-          ><select name="sort">
-            <option value="featured">Featured</option>
-            <option value="newest" th:selected="${filters['sort']=='newest'}">
-              Newest
-            </option>
-            <option
-              value="name_asc"
-              th:selected="${filters['sort']=='name_asc'}"
-            >
-              Name A–Z
-            </option>
-          </select></label
-        ><button class="button primary" type="submit">Find products ↗</button>
-      </form>
-      <div class="listing-top">
-        <span th:text="${result.total}+' products to discover'"></span
-        ><a href="/products">Clear filters</a>
-      </div>
-      <div class="product-grid" th:if="${!#lists.isEmpty(result.items)}">
-        <th:block th:each="p:${result.items}"
-          ><th:block th:replace="~{fragments :: productCard(${p})}"></th:block
-        ></th:block>
-      </div>
-      <div class="empty" th:if="${#lists.isEmpty(result.items)}">
-        <h2>A new adventure is still out there.</h2>
-        <p>Try a different search or explore all our activities.</p>
-        <a class="button primary" href="/products">Clear filters</a>
-      </div>
-      <div th:replace="~{fragments :: pagination(${result})}"></div>
     </main>
     <footer th:replace="~{fragments :: footer}"></footer>
   </body>
