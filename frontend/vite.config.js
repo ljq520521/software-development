@@ -10,7 +10,16 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api': { target: apiTarget, changeOrigin: true },
+      '/api': {
+        target: apiTarget,
+        changeOrigin: true,
+        // 覆写 Origin 头为后端地址,使后端 CSRF 同源检查(Origin==Host)通过
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.setHeader('Origin', apiTarget)
+          })
+        },
+      },
       '/media': { target: apiTarget, changeOrigin: true },
     },
   },

@@ -56,7 +56,7 @@ function search() {
             <el-option label="页面" value="page" />
           </el-select>
         </el-form-item>
-        <el-form-item label="Status">
+        <el-form-item label="状态">
           <el-select v-model="filters.status" clearable placeholder="全部" style="width: 140px;">
             <el-option v-for="(m, k) in statusMeta" :key="k" :label="m.label" :value="k" />
           </el-select>
@@ -71,8 +71,8 @@ function search() {
         </el-table-column>
         <el-table-column prop="title" label="标题" min-width="200" />
         <el-table-column prop="type" label="类型" width="90" />
-        <el-table-column prop="slug" label="Slug" width="150" />
-        <el-table-column label="Status" width="110">
+        <el-table-column prop="slug" label="别名" width="150" />
+        <el-table-column label="状态" width="110">
           <template #default="{ row }">
             <el-tag :type="statusMeta[row.status]?.type || 'info'" size="small">{{ statusMeta[row.status]?.label || row.status }}</el-tag>
           </template>
@@ -80,7 +80,7 @@ function search() {
         <el-table-column label="更新时间" width="170">
           <template #default="{ row }">{{ formatDateTime(row.updated_at) }}</template>
         </el-table-column>
-        <el-table-column label="Actions" width="100" fixed="right">
+        <el-table-column label="操作" width="100" fixed="right">
           <template #default="{ row }">
             <el-button size="small" @click="router.push(`/admin/content/${row.id}`)">编辑</el-button>
           </template>

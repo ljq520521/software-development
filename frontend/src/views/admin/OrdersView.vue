@@ -96,7 +96,7 @@ async function saveProcess() {
         <el-form-item label="搜索">
           <el-input v-model="filters.q" placeholder="订单号 / 客户 / 邮箱" clearable style="width: 240px;" @keyup.enter="search" />
         </el-form-item>
-        <el-form-item label="Status">
+        <el-form-item label="状态">
           <el-select v-model="filters.status" clearable placeholder="全部" style="width: 170px;">
             <el-option v-for="(m, k) in statusMeta" :key="k" :label="m.label" :value="k" />
           </el-select>
@@ -110,7 +110,7 @@ async function saveProcess() {
         <el-table-column label="金额">
           <template #default="{ row }">{{ formatCents(row.total_cents) }}</template>
         </el-table-column>
-        <el-table-column label="Status" width="150">
+        <el-table-column label="状态" width="150">
           <template #default="{ row }">
             <el-tag :type="statusMeta[row.status]?.type || 'info'" size="small">{{ statusMeta[row.status]?.label || row.status }}</el-tag>
           </template>
@@ -118,7 +118,7 @@ async function saveProcess() {
         <el-table-column label="创建时间" width="170">
           <template #default="{ row }">{{ formatDateTime(row.created_at) }}</template>
         </el-table-column>
-        <el-table-column label="Actions" width="90" fixed="right">
+        <el-table-column label="操作" width="90" fixed="right">
           <template #default="{ row }">
             <el-button size="small" @click="openDetail(row)">查看</el-button>
           </template>
@@ -148,9 +148,9 @@ async function saveProcess() {
           <span style="margin-left: 8px;">支付: {{ detail.payment_status }}</span>
         </p>
         <el-table :data="detail.items" size="small">
-          <el-table-column prop="product_name" label="Product" min-width="160" />
+          <el-table-column prop="product_name" label="商品" min-width="160" />
           <el-table-column prop="sku" label="SKU" width="120" />
-          <el-table-column label="Unit" width="90">
+          <el-table-column label="单价" width="90">
             <template #default="{ row }">{{ formatCents(row.unit_price_cents) }}</template>
           </el-table-column>
           <el-table-column prop="quantity" label="Qty" width="60" />
@@ -166,7 +166,7 @@ async function saveProcess() {
         </p>
         <el-divider />
         <el-form label-position="top">
-          <el-form-item label="Status">
+          <el-form-item label="状态">
             <el-select v-model="processForm.status" style="width: 100%;">
               <el-option v-for="(m, k) in statusMeta" :key="k" :label="m.label" :value="k" />
             </el-select>

@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminApi } from '../../api'
@@ -94,7 +94,7 @@ async function toggle启用(row) {
             <el-switch :model-value="row.enabled" @change="toggle启用(row)" />
           </template>
         </el-table-column>
-        <el-table-column label="Actions" width="100" fixed="right">
+        <el-table-column label="操作" width="100" fixed="right">
           <template #default="{ row }">
             <el-button size="small" @click="open编辑(row)">编辑</el-button>
           </template>

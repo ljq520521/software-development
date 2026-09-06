@@ -22,12 +22,12 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class SeedData implements ApplicationRunner {
   private static final List<String> PRODUCT_NAMES =
       List.of(
-          "Mini Bowling Play Set",
-          "Balance & Move Kit",
-          "Play Anywhere Ball Set",
-          "Family Bowling Challenge",
-          "Jump & Discover Kit",
-          "Outdoor Adventure Set");
+          "迷你保龄球套装",
+          "平衡与移动套装",
+          "随处玩乐球类套装",
+          "家庭保龄球挑战套装",
+          "跳跃探索套装",
+          "户外冒险套装");
   private static final List<String> PRODUCT_SLUGS =
       List.of(
           "mini-bowling-play-set",
@@ -46,28 +46,28 @@ public class SeedData implements ApplicationRunner {
           "product-outdoor-adventure.jpg");
   private static final List<String> PRODUCT_ALTS =
       List.of(
-          "Six wooden bowling pins with colored bands and a small blue ball",
-          "Five stepping stones and a wooden balance beam in a bright playroom",
-          "Three soft fabric play balls, marker cones and a canvas carry bag",
-          "A family playing with a ten-pin wooden bowling challenge set",
-          "A child using floor spots, soft hurdles and a cotton jump rope",
-          "Children playing with a portable ball, beanbag, cone and ring-toss set outdoors");
+          "彩色木制保龄球瓶与一颗蓝色小球",
+          "五个踏脚石与一根木质平衡木,置于明亮的游戏室",
+          "三颗布质软球、标志锥和一个帆布收纳袋",
+          "一家人正在玩十瓶木质保龄球挑战套装",
+          "孩子在使用地面圆点、软栏和棉质跳绳",
+          "孩子们在户外玩便携球、豆袋、锥桶与套圈套装");
   private static final List<String> SHORT_DESCRIPTIONS =
       List.of(
-          "Six smooth wooden pins, one little blue ball and a very satisfying strike.",
-          "Step, balance and build a new path with five stones and a wooden bridge.",
-          "Three soft balls, four marker cones and one carry bag for play wherever you go.",
-          "Ten wooden pins, two balls and score tiles turn the living room into a family lane.",
-          "A jump rope, six activity spots and four soft hurdles for a course that changes every day.",
-          "Balls, beanbags, cones and ring toss come together in one portable backyard challenge.");
+          "六根光滑木制球瓶、一颗蓝色小球,带来一次非常满足的全中。",
+          "踩着五块石头和木质平衡木,迈步、保持平衡,走出属于你们的新路线。",
+          "三颗软球、四个标志锥和一个收纳袋,走到哪里都能玩起来。",
+          "十根木质球瓶、两颗球和记分牌,把客厅变成家庭球道。",
+          "一条跳绳、六个活动圆点和四个软栏,让赛道每天都能变化。",
+          "球、豆袋、锥桶和套圈组合成一套便携的后院挑战。");
   private static final List<String> COMPONENTS =
       List.of(
-          "6 beechwood pins · 1 wooden ball",
-          "5 non-slip stepping stones · 1 wooden balance beam",
-          "3 soft fabric balls · 4 marker cones · 1 canvas bag",
-          "10 beechwood pins · 2 wooden balls · score tiles",
-          "1 cotton jump rope · 6 floor spots · 4 soft hurdles",
-          "2 soft balls · 6 beanbags · 4 cones · 3 ring-toss pegs · carry tote");
+          "6 根山毛榉球瓶 · 1 颗木球",
+          "5 个防滑踏脚石 · 1 根木质平衡木",
+          "3 颗布质软球 · 4 个标志锥 · 1 个帆布袋",
+          "10 根山毛榉球瓶 · 2 颗木球 · 记分牌",
+          "1 条棉质跳绳 · 6 个地面圆点 · 4 个软栏",
+          "2 颗软球 · 6 个豆袋 · 4 个锥桶 · 3 个套圈桩 · 收纳提袋");
   private final CatalogService c;
   private final MediaService media;
   private final PasswordEncoder passwords;
@@ -121,7 +121,7 @@ public class SeedData implements ApplicationRunner {
           }
           String now = Instant.now().toString();
           List<String> cats = new ArrayList<>();
-          String[] names = {"Bowling & aim", "Balance & coordination", "Outdoor games"},
+          String[] names = {"保龄球与瞄准", "平衡与协调", "户外游戏"},
               slugs = {"bowling", "balance", "outdoor"};
           for (int i = 0; i < names.length; i++)
             cats.add(
@@ -134,7 +134,7 @@ public class SeedData implements ApplicationRunner {
                             "slug",
                             slugs[i],
                             "description",
-                            "Simple ways to discover the joy of movement.",
+                            "用简单的方式发现运动的乐趣。",
                             "enabled",
                             true,
                             "sort_order",
@@ -181,68 +181,57 @@ public class SeedData implements ApplicationRunner {
           String[][] pages = {
             {
               "about",
-              "Made for the joy of moving",
-              "We believe the best discoveries begin with play.",
-              "## Play is where possibility begins\n"
-                  + "A small challenge. A shared laugh. One more try. WEMOVE SPORTS brings movement"
-                  + " into the moments that bring us together.\n\n"
-                  + "## Our story, in motion\n"
-                  + "Explore our collections, find an activity for your family, and get in touch to"
-                  + " learn more. This website contains demonstration catalog content awaiting"
-                  + " brand review."
+              "为运动的快乐而生",
+              "我们相信,最好的发现始于玩乐。",
+              "## 玩乐,是一切可能的起点\n"
+                  + "一个小小的挑战、一次共同的欢笑、再多试一次。WEMOVE 把运动带进那些让我们"
+                  + " 彼此靠近的瞬间。\n\n"
+                  + "## 我们的故事,一直在运动\n"
+                  + "探索我们的系列产品,为家人找一项活动,或与我们联系了解更多。本网站目前"
+                  + " 展示的是待品牌审阅的演示目录内容。"
             },
             {
               "quality-safety",
-              "Thoughtful play starts here",
-              "Clear information for confident choices.",
-              "## Before you begin\n"
-                  + "Always follow the specific product instructions, age recommendations, and"
-                  + " adult-supervision requirements supplied with your product.\n\n"
-                  + "## Ask us about a product\n"
-                  + "Our sample catalog does not make certification claims. Contact us for"
-                  + " confirmed specifications, materials and current safety documents."
+              "用心玩乐,从这里开始",
+              "清晰的信息,让选择更安心。",
+              "## 开始之前\n"
+                  + "请始终遵循产品随附的具体说明、适龄建议和成人看护要求。\n\n"
+                  + "## 咨询产品信息\n"
+                  + "本示例目录不包含认证声明。如需确认的规格、材质和当前安全文件,请联系我们。"
             },
             {
               "support",
-              "How can we help?",
-              "A little guidance for your next adventure.",
-              "## Find your answer\n"
-                  + "Browse our frequently asked questions or contact us about a specific"
-                  + " product.\n\n"
-                  + "## Product information\n"
-                  + "Choose a product from the catalog and use the contact button to include it"
-                  + " with your question."
+              "我们能帮您什么?",
+              "为您的下一次冒险提供一点指引。",
+              "## 找到您的答案\n"
+                  + "浏览常见问题,或就具体产品联系我们。\n\n"
+                  + "## 产品信息\n"
+                  + "从目录中选择产品,通过联系按钮将问题随产品一起提交。"
             },
             {
               "privacy",
-              "Privacy information",
-              "About the information submitted through this demonstration website.",
-              "## Information you choose to share\n"
-                  + "Contact and partnership forms collect adult contact details and business"
-                  + " messages. Do not submit children's personal information.\n\n"
-                  + "## How this site works\n"
-                  + "Necessary session cookies support sign-in and secure forms. No advertising or"
-                  + " analytics cookies are enabled. Submitted messages are stored for"
-                  + " administrators to review.\n\n"
-                  + "## Contact and review\n"
-                  + "Use the published contact address for access or deletion requests. This is"
-                  + " demonstration policy text; the operator must replace it with a reviewed"
-                  + " policy before public operation."
+              "隐私信息",
+              "关于通过本演示网站提交的信息。",
+              "## 您选择分享的信息\n"
+                  + "联系与合作伙伴表单会收集成年人的联系方式与商务留言。请勿提交儿童的个人信息。\n\n"
+                  + "## 本网站如何运作\n"
+                  + "必要的会话 Cookie 用于支持登录与安全表单。本网站未启用广告或分析 Cookie。"
+                  + " 提交的留言会保存供管理员查阅。\n\n"
+                  + "## 联系与查阅\n"
+                  + "如需查阅或删除信息,请使用公开的联系地址。这是演示用政策文本;正式运营前,"
+                  + " 运营方必须替换为经审阅的政策。"
             },
             {
               "terms",
-              "Website terms",
-              "Information about using this demonstration catalog.",
-              "## Catalog information\n"
-                  + "Products and specifications on this installation are demonstration records,"
-                  + " not a commercial offer. Activity photos are illustrative.\n\n"
-                  + "## No online purchase\n"
-                  + "The website accepts product questions and partnership inquiries. It does not"
-                  + " accept orders or payments.\n\n"
-                  + "## Contact\n"
-                  + "Please ask us to confirm product availability and specifications. Replace"
-                  + " these demonstration terms with reviewed business terms before public"
-                  + " operation."
+              "网站条款",
+              "关于使用本演示目录的信息。",
+              "## 目录信息\n"
+                  + "本网站上的产品与规格均为演示记录,不构成商业要约。活动照片仅作示意。\n\n"
+                  + "## 不提供在线购买\n"
+                  + "本网站接受产品咨询与合作咨询,不接受订单或付款。\n\n"
+                  + "## 联系方式\n"
+                  + "请向我们确认产品库存与规格。正式运营前,请将这些演示条款替换为经审阅的"
+                  + " 商业条款。"
             }
           };
           for (String[] p : pages)
@@ -251,68 +240,60 @@ public class SeedData implements ApplicationRunner {
               "article",
               "five-ways-to-play-together",
               "Five little ways to move together",
-              "Make everyday moments a little more playful.",
-              "## Start small\n"
-                  + "Set aside ten minutes and choose a comfortable space. Let everyone help decide"
-                  + " what to play.\n\n"
-                  + "## Try a friendly challenge\n"
-                  + "Count successful throws, build a simple movement course, or make up a"
-                  + " balancing game. Adjust the challenge to suit the people taking part.\n\n"
-                  + "## Keep it playful\n"
-                  + "Take turns, celebrate effort and pause when someone needs a break. Always use"
-                  + " age-appropriate equipment and adult supervision.",
+              "让平凡的时刻多一点乐趣。",
+              "## 从小处开始\n"
+                  + "留出十分钟,选一个舒适的空间,让每个人都帮忙决定玩什么。\n\n"
+                  + "## 试一试友好的挑战\n"
+                  + "数一数投中的次数、搭建一个简单的运动路线,或者发明一个平衡游戏。根据参与者"
+                  + " 的情况调整挑战难度。\n\n"
+                  + "## 保持轻松有趣\n"
+                  + "轮流进行、为每一次努力喝彩,当有人需要休息时就暂停。始终使用适龄的装备并"
+                  + " 由成人看护。",
               mids.get(5),
-              "A child creating a movement course with hurdles, floor spots and a jump rope",
+              "孩子正在用软栏、地面圆点和跳绳搭建运动路线",
               false,
               now);
           createContent(
               "article",
               "take-play-outside",
-              "A little fresh air. A whole lot of play.",
-              "Ideas for a shared afternoon outdoors.",
-              "## Make space for discovery\n"
-                  + "Choose a safe, open area and an activity everyone can enjoy. A familiar ball"
-                  + " game can become a new adventure with a few simple rules.\n\n"
-                  + "## Bring the family together\n"
-                  + "Take turns inventing a challenge. Keep the focus on enjoying time together"
-                  + " rather than winning.\n\n"
-                  + "## Pack up with care\n"
-                  + "Follow the care instructions for your equipment and check the play area before"
-                  + " you leave.",
+              "一点新鲜空气,一整段快乐时光。",
+              "一起度过一个户外的下午。",
+              "## 为探索腾出空间\n"
+                  + "选择一个安全、开阔的区域,和一项大家都喜欢的活动。一个熟悉的球类游戏,加上"
+                  + " 几条简单的规则,就能变成新的冒险。\n\n"
+                  + "## 把家人聚在一起\n"
+                  + "轮流发明挑战,把重点放在享受在一起的时光,而不是输赢。\n\n"
+                  + "## 细心收拾\n"
+                  + "按照装备的保养说明收纳,并在离开前检查活动区域。",
               mids.get(6),
-              "Children exploring an outdoor challenge with balls, beanbags and ring toss",
+              "孩子们正在户外玩球、豆袋和套圈挑战",
               false,
               now);
           String[][] faqs = {
             {
-              "How do I choose a product?",
-              "Browse by activity and suggested age, then contact us to confirm the product's"
-                  + " specifications and instructions.",
-              "Products"
+              "如何选择产品?",
+              "按活动和建议年龄浏览,然后联系我们确认产品的规格和使用说明。",
+              "产品"
             },
             {
-              "Can I buy directly from this website?",
-              "This catalog accepts inquiries. Use the contact form to discuss a product and"
-                  + " available purchasing channels.",
-              "Ordering"
+              "可以直接在本网站购买吗?",
+              "本目录接受咨询。请使用联系表单咨询产品和可用的购买渠道。",
+              "订购"
             },
             {
-              "How can my business become a partner?",
-              "Complete the partnership application. Your submission receives a reference number"
-                  + " and is reviewed by our team.",
-              "Partnerships"
+              "我的企业如何成为合作伙伴?",
+              "填写合作申请。提交后会获得一个回执编号,由我们的团队进行审核。",
+              "合作"
             },
             {
-              "Where can I find safety information?",
-              "Follow the instructions supplied with your specific product. Contact us to request"
-                  + " confirmed safety and care information.",
-              "Support"
+              "在哪里可以找到安全信息?",
+              "请遵循具体产品随附的说明。如需确认的安全与保养信息,请联系我们。",
+              "支持"
             },
             {
-              "Will I receive a confirmation email?",
-              "This installation shows an on-screen reference after a successful submission. Please"
-                  + " save it for your records.",
-              "Contact"
+              "我会收到确认邮件吗?",
+              "本网站会在提交成功后显示屏幕回执编号,请妥善保存以备查阅。",
+              "联系"
             }
           };
           for (int i = 0; i < faqs.length; i++)
@@ -335,9 +316,9 @@ public class SeedData implements ApplicationRunner {
                   EntityType.SITE,
                   node(
                       "brand_name",
-                      "WEMOVE SPORTS",
+                      "WEMOVE",
                       "tagline",
-                      "Small moves. Big discoveries.",
+                      "小小的动作,大大的发现。",
                       "contact_email",
                       "hello@example.com",
                       "contact_phone",
@@ -356,29 +337,27 @@ public class SeedData implements ApplicationRunner {
           ObjectNode hero =
               node(
                   "title",
-                  "Small moves.\nBig discoveries.",
+                  "小小的动作\n大大的发现。",
                   "subtitle",
-                  "More movement. More imagination. More moments together. Discover a world of"
-                      + " active play for the whole family.");
+                  "更多的运动、更多的想象、更多的亲子时刻。一起发现属于全家的运动世界。");
           hero.set(
               "image",
               node(
                   "media_id",
                   mids.get(0),
                   "alt",
-                  "A family playing together with the WEMOVE active-play collection"));
-          hero.set("primary_cta", node("label", "Find your next adventure", "href", "/products"));
+                  "一家人正在玩 WEMOVE 运动玩乐系列"));
+          hero.set("primary_cta", node("label", "开启下一场冒险", "href", "/products"));
           home.set("hero", hero);
           home.set(
               "dealer_cta",
               node(
                   "title",
-                  "Let's get more people moving.",
+                  "让更多人一起动起来。",
                   "description",
-                  "Bring the joy of active play to your community. Start a conversation about"
-                      + " becoming a WEMOVE partner.",
+                  "把快乐运动的喜悦带到你的社区。与我们聊聊,成为 WEMOVE 合作伙伴。",
                   "button_label",
-                  "Become a partner"));
+                  "成为合作伙伴"));
           c.repository().create(EntityType.HOME, home);
         });
   }
@@ -449,7 +428,7 @@ public class SeedData implements ApplicationRunner {
               "media_id",
               mediaIds.getFirst(),
               "alt",
-              "A family playing together with the WEMOVE active-play collection"));
+              "一家人正在玩 WEMOVE 运动玩乐系列"));
       ObjectNode values = node();
       values.set("hero", hero);
       c.repository()
@@ -486,24 +465,21 @@ public class SeedData implements ApplicationRunner {
   private void applyDemoPresentation(ObjectNode product, int index, String mediaId) {
     String playSetting =
         switch (index) {
-          case 1, 3 -> "Indoor play";
-          case 5 -> "Outdoor play";
-          default -> "Indoor or outdoor play";
+          case 1, 3 -> "室内玩法";
+          case 5 -> "户外玩法";
+          default -> "室内或户外玩法";
         };
     product.put("short_description", SHORT_DESCRIPTIONS.get(index));
     product.put(
         "description_markdown",
-        "## Everything in the picture\n"
-            + "This sample set includes "
+        "## 图中的每一件都在这里\n"
+            + "本示例套装包含 "
             + COMPONENTS.get(index)
-            + ". Every item named here is represented in the product image.\n\n"
-            + "## Make the challenge your own\n"
-            + "Start with one simple game, then rearrange the pieces, change the distance or invite"
-            + " another player. The open-ended format makes it easy to create a fresh activity for"
-            + " different spaces and confidence levels.\n\n"
-            + "## Sample catalog information\n"
-            + "This is a product concept for demonstration. Confirm final materials, dimensions and"
-            + " safety instructions before commercial use.");
+            + "。图片中出现的每一件物品都包含在内。\n\n"
+            + "## 让挑战成为你的专属\n"
+            + "从一个简单的小游戏开始,然后重新摆放道具、改变距离或邀请更多玩家。开放式设计让您轻松为不同空间和不同水平的孩子创造新玩法。\n\n"
+            + "## 示例目录说明\n"
+            + "此为演示用产品概念。商用前请确认最终材质、尺寸与安全说明。");
     product.set(
         "environments",
         c.json()
@@ -516,17 +492,17 @@ public class SeedData implements ApplicationRunner {
         c.json()
             .valueToTree(
                 List.of(
-                    "The complete set is shown in the product image",
-                    "Rearrange the pieces to create new challenges",
-                    "Designed for movement, imagination and shared play")));
+                    "完整套装内容见产品图片",
+                    "重新组合道具,创造新挑战",
+                    "为运动、想象与亲子共玩而设计")));
     product.set(
         "specifications",
         c.json()
             .valueToTree(
                 List.of(
-                    Map.of("name", "Set includes", "value", COMPONENTS.get(index)),
-                    Map.of("name", "Suggested play", "value", playSetting),
-                    Map.of("name", "Catalog status", "value", "Demonstration product concept"))));
+                    Map.of("name", "套装包含", "value", COMPONENTS.get(index)),
+                    Map.of("name", "建议玩法", "value", playSetting),
+                    Map.of("name", "目录状态", "value", "演示产品概念"))));
     product.set(
         "images",
         c.json()
@@ -571,7 +547,7 @@ public class SeedData implements ApplicationRunner {
   }
 
   private ObjectNode seo(String title, String desc) {
-    return node("title", title + " | WEMOVE SPORTS", "description", desc);
+    return node("title", title + " | WEMOVE", "description", desc);
   }
 
   private ObjectNode node(Object... pairs) {

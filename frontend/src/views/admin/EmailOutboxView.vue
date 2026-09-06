@@ -53,7 +53,7 @@ function search() {
         <el-form-item label="搜索">
           <el-input v-model="filters.q" placeholder="收件人 / 主题" clearable style="width: 220px;" @keyup.enter="search" />
         </el-form-item>
-        <el-form-item label="Status">
+        <el-form-item label="状态">
           <el-select v-model="filters.status" clearable placeholder="全部" style="width: 130px;">
             <el-option v-for="(m, k) in statusMeta" :key="k" :label="m.label" :value="k" />
           </el-select>
@@ -66,7 +66,7 @@ function search() {
         </el-table-column>
         <el-table-column prop="template_name" label="模板" width="150" />
         <el-table-column prop="subject" label="主题" min-width="220" />
-        <el-table-column label="Status" width="100">
+        <el-table-column label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="statusMeta[row.status]?.type || 'info'" size="small">{{ statusMeta[row.status]?.label || row.status }}</el-tag>
           </template>

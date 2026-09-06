@@ -132,7 +132,7 @@ async function save(status) {
             <el-form-item label="别名"><el-input v-model="form.slug" :disabled="form.is_system" /></el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="Status">
+            <el-form-item label="状态">
               <el-tag :type="form.status === 'published' ? 'success' : 'info'">{{ form.status }}</el-tag>
             </el-form-item>
           </el-col>

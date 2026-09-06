@@ -38,7 +38,7 @@ function search() {
         <el-form-item label="搜索">
           <el-input v-model="filters.q" placeholder="支付单号 / 订单号 / 网关号" clearable style="width: 240px;" @keyup.enter="search" />
         </el-form-item>
-        <el-form-item label="Status">
+        <el-form-item label="状态">
           <el-select v-model="filters.status" clearable placeholder="全部" style="width: 130px;">
             <el-option label="成功" value="succeeded" />
             <el-option label="已退款" value="refunded" />
@@ -53,7 +53,7 @@ function search() {
         <el-table-column label="金额">
           <template #default="{ row }">{{ formatCents(row.amount_cents) }}</template>
         </el-table-column>
-        <el-table-column prop="status" label="Status" width="110" />
+        <el-table-column prop="status" label="状态" width="110" />
         <el-table-column label="支付时间" width="170">
           <template #default="{ row }">{{ formatDateTime(row.paid_at) }}</template>
         </el-table-column>

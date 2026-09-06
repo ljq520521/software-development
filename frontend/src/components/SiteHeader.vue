@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { ref, onMounted } from 'vue'
 import { api } from '../api'
 
@@ -22,9 +22,9 @@ onMounted(async () => {
     <header class="site-header">
       <div class="inner">
         <router-link to="/" class="brand">
-          <span class="logo-mark"><img src="/wemove-logo.png" alt="WEMOVE SPORTS" /></span>
+          <span class="logo-mark"><img src="/wemove-logo.png" alt="WEMOVE" /></span>
           <span>
-            {{ site?.brand_name || 'WEMOVE SPORTS' }}
+            {{ site?.brand_name || 'WEMOVE' }}
             <small>运动 · 玩乐 · 成长</small>
           </span>
         </router-link>

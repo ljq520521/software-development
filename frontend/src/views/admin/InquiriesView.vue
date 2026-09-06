@@ -93,7 +93,7 @@ async function saveProcess() {
         <el-form-item label="搜索">
           <el-input v-model="filters.q" placeholder="回执编号 / 姓名 / 主题" clearable style="width: 220px;" @keyup.enter="search" />
         </el-form-item>
-        <el-form-item label="Status">
+        <el-form-item label="状态">
           <el-select v-model="filters.status" clearable placeholder="全部" style="width: 140px;">
             <el-option v-for="(m, k) in statusMeta" :key="k" :label="m.label" :value="k" />
           </el-select>
@@ -112,7 +112,7 @@ async function saveProcess() {
         </el-table-column>
         <el-table-column prop="name" label="姓名" width="140" />
         <el-table-column prop="subject" label="主题" min-width="200" />
-        <el-table-column label="Status" width="120">
+        <el-table-column label="状态" width="120">
           <template #default="{ row }">
             <el-tag :type="statusMeta[row.status]?.type || 'info'" size="small">{{ statusMeta[row.status]?.label || row.status }}</el-tag>
           </template>
@@ -120,7 +120,7 @@ async function saveProcess() {
         <el-table-column label="提交时间" width="170">
           <template #default="{ row }">{{ formatDateTime(row.created_at) }}</template>
         </el-table-column>
-        <el-table-column label="Actions" width="90" fixed="right">
+        <el-table-column label="操作" width="90" fixed="right">
           <template #default="{ row }">
             <el-button size="small" @click="openDetail(row)">查看</el-button>
           </template>
@@ -148,7 +148,7 @@ async function saveProcess() {
         <p><strong>提交时间:</strong> {{ formatDateTime(detail.consent_at) }}</p>
         <el-divider />
         <el-form label-position="top">
-          <el-form-item label="Status">
+          <el-form-item label="状态">
             <el-select v-model="processForm.status" style="width: 100%;">
               <el-option v-for="(m, k) in statusMeta" :key="k" :label="m.label" :value="k" />
             </el-select>

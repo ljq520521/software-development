@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { ref, onMounted } from 'vue'
 import { api } from '../api'
 
@@ -18,9 +18,9 @@ onMounted(async () => {
     <div class="footer-main">
       <div>
         <router-link to="/" class="brand light" style="color: #fff;">
-          <span class="logo-mark"><img src="/wemove-logo.png" alt="WEMOVE SPORTS" /></span>
+          <span class="logo-mark"><img src="/wemove-logo.png" alt="WEMOVE" /></span>
           <span>
-            {{ site?.brand_name || 'WEMOVE SPORTS' }}
+            {{ site?.brand_name || 'WEMOVE' }}
             <small style="color: rgba(255,255,255,.55);">运动 · 玩乐 · 成长</small>
           </span>
         </router-link>
@@ -51,7 +51,7 @@ onMounted(async () => {
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© {{ new Date().getFullYear() }} {{ site?.brand_name || 'WEMOVE SPORTS' }} 保留所有权利</span>
+      <span>© {{ new Date().getFullYear() }} {{ site?.brand_name || 'WEMOVE' }} 保留所有权利</span>
       <span>一起动起来,一起玩出精彩</span>
     </div>
   </footer>
