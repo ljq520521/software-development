@@ -142,6 +142,35 @@ const commerceError = (result) => {
   );
   return details.length ? details.join("\n") : result.message || "The request could not be completed.";
 };
+const orderStorageKey = "wemove.orders.v1";
+const savedOrders = () => {
+  try {
+    const value = JSON.parse(localStorage.getItem(orderStorageKey) || "[]");
+    return Array.isArray(value)
+      ? value.filter(
+          (item) =>
+            item &&
+            typeof item.orderNumber === "string" &&
+            typeof item.accessToken === "string",
+        )
+      : [];
+  } catch {
+    return [];
+  }
+};
+const writeSavedOrders = (orders) => {
+  try {
+    localStorage.setItem(orderStorageKey, JSON.stringify(orders.slice(0, 50)));
+  } catch {
+    // The private order page remains usable when browser storage is unavailable.
+  }
+};
+const rememberOrder = (orderNumber, accessToken) => {
+  if (!orderNumber || !accessToken) return;
+  const orders = savedOrders().filter((item) => item.orderNumber !== orderNumber);
+  orders.unshift({ orderNumber, accessToken, savedAt: new Date().toISOString() });
+  writeSavedOrders(orders);
+};
 if (commerceForm) {
   const orderKey = crypto.randomUUID();
   commerceForm.addEventListener("submit", async (event) => {
@@ -166,6 +195,7 @@ if (commerceForm) {
       const result = await response.json();
       if (!response.ok) throw Error(commerceError(result));
       const order = result.data;
+      rememberOrder(order.order_number, order.access_token);
       location.assign(
         `/orders/${encodeURIComponent(order.order_number)}?token=${encodeURIComponent(order.access_token)}`,
       );
@@ -175,6 +205,96 @@ if (commerceForm) {
       button.textContent = original;
     }
   });
+}
+
+const orderPage = document.querySelector("[data-order-number]");
+if (orderPage) rememberOrder(orderPage.dataset.orderNumber, orderPage.dataset.orderToken);
+
+const ordersList = document.querySelector("[data-orders-list]");
+if (ordersList) {
+  const empty = document.querySelector("[data-orders-empty]");
+  const notice = document.querySelector("[data-orders-notice]");
+  const money = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "CNY",
+  });
+  const date = new Intl.DateTimeFormat("en", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+  const text = (tag, className, value) => {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    node.textContent = value;
+    return node;
+  };
+  const renderOrder = (order, saved) => {
+    const card = document.createElement("article");
+    card.className = "saved-order-card";
+    const heading = document.createElement("div");
+    heading.className = "saved-order-heading";
+    const identity = document.createElement("div");
+    identity.append(
+      text("span", "saved-order-date", date.format(new Date(order.created_at))),
+      text("h2", "", order.order_number),
+    );
+    const status = text("span", `order-status ${order.status}`, order.status.replaceAll("_", " "));
+    heading.append(identity, status);
+    const items = document.createElement("div");
+    items.className = "saved-order-items";
+    (order.items || []).forEach((item) => {
+      const row = document.createElement("div");
+      row.append(
+        text("span", "", `${item.product_name} × ${item.quantity}`),
+        text("strong", "", money.format(item.line_total_cents / 100)),
+      );
+      items.append(row);
+    });
+    const footer = document.createElement("div");
+    footer.className = "saved-order-footer";
+    const total = document.createElement("p");
+    total.append("Total ", text("strong", "", money.format(order.total_cents / 100)));
+    const link = text("a", "button primary", "View order →");
+    link.href = `/orders/${encodeURIComponent(order.order_number)}?token=${encodeURIComponent(saved.accessToken)}`;
+    footer.append(total, link);
+    card.append(heading, items, footer);
+    return card;
+  };
+  const loadOrders = async () => {
+    const records = savedOrders();
+    if (!records.length) {
+      ordersList.hidden = true;
+      empty.hidden = false;
+      return;
+    }
+    const results = await Promise.all(
+      records.map(async (saved) => {
+        try {
+          const response = await fetch(
+            `/api/v1/orders/${encodeURIComponent(saved.orderNumber)}?access_token=${encodeURIComponent(saved.accessToken)}`,
+          );
+          if (response.status === 404) return { saved, missing: true };
+          const result = await response.json();
+          if (!response.ok) throw Error(result.message || "Unable to load this order.");
+          return { saved, order: result.data };
+        } catch {
+          return { saved, failed: true };
+        }
+      }),
+    );
+    const visible = results.filter((result) => result.order);
+    writeSavedOrders(results.filter((result) => !result.missing).map((result) => result.saved));
+    ordersList.replaceChildren(...visible.map((result) => renderOrder(result.order, result.saved)));
+    ordersList.hidden = !visible.length;
+    empty.hidden = Boolean(visible.length);
+    const failures = results.filter((result) => result.failed).length;
+    if (failures) {
+      notice.textContent = `${failures} order${failures === 1 ? "" : "s"} could not be refreshed. Check your connection and try again.`;
+      notice.hidden = false;
+    }
+  };
+  loadOrders();
 }
 
 document.querySelectorAll("[data-payment-method]").forEach((button) => {

@@ -80,6 +80,12 @@ public class PageController {
     return "order";
   }
 
+  @GetMapping("/orders")
+  public String orders(Model m) {
+    base(m, "Your orders", "orders");
+    return "orders";
+  }
+
   @GetMapping("/play")
   public String articles(@RequestParam Map<String, String> q, Model m) {
     base(m, "Play & learn", "play");

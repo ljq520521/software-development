@@ -1,5 +1,7 @@
-# WEMOVE SPORTS 网站
+## 【新增】用户订单显示功能 打开首页导航栏“order”即可！
+<img src="./demo_image_1.png" alt="演示" width="600">
 
+# WEMOVE SPORTS 网站
 基于 Java、Spring Boot、MyBatis 和 MySQL 的品牌网站，包含英文官网、订单与演示支付、自动邮件、经销商账号与门户、中文管理后台和 REST API。前端使用 Thymeleaf 服务端渲染，页面、CSS、JavaScript 与后端一起打包；无需 npm，也不需要把前端单独部署到 Nginx。
 
 ## 1. 已实现功能
@@ -98,6 +100,7 @@ Compose 会先启动 MySQL，等实际数据库查询通过健康检查后再启
 | 用途 | 默认地址 |
 | --- | --- |
 | 官网 | [http://127.0.0.1:8081/](http://127.0.0.1:8081/) |
+| 当前浏览器订单 | [http://127.0.0.1:8081/orders](http://127.0.0.1:8081/orders) |
 | 管理后台 | [http://127.0.0.1:8081/admin](http://127.0.0.1:8081/admin) |
 | 合作申请 | [http://127.0.0.1:8081/dealers/apply](http://127.0.0.1:8081/dealers/apply) |
 | 经销商登录 | [http://127.0.0.1:8081/dealers/login](http://127.0.0.1:8081/dealers/login) |

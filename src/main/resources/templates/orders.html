@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments :: head}"></head>
+  <body>
+    <header th:replace="~{fragments :: header}"></header>
+    <main class="container commerce-page orders-index">
+      <div class="breadcrumb"><a href="/">Home</a><span>/</span><span>Orders</span></div>
+      <section class="orders-heading">
+        <div>
+          <span class="eyebrow"><i></i> YOUR PURCHASES</span>
+          <h1>Your orders</h1>
+          <p>Orders created in this browser appear here. Open an order to review its items, payment and delivery status.</p>
+        </div>
+        <aside>
+          <strong>Private by design</strong>
+          <p>Your order access links stay in this browser and are never shown to other visitors.</p>
+        </aside>
+      </section>
+      <p class="orders-notice" data-orders-notice hidden role="alert"></p>
+      <section class="saved-orders" data-orders-list aria-live="polite" aria-label="Your orders">
+        <div class="orders-loading"><span></span><p>Loading your orders…</p></div>
+      </section>
+      <section class="empty orders-empty" data-orders-empty hidden>
+        <span aria-hidden="true">◎</span>
+        <h2>No orders in this browser yet.</h2>
+        <p>When you buy a play set, your order will be saved here for quick access.</p>
+        <a class="button primary" href="/products">Explore products →</a>
+      </section>
+    </main>
+    <footer th:replace="~{fragments :: footer}"></footer>
+  </body>
+</html>

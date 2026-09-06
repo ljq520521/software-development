@@ -1054,6 +1054,104 @@ footer {
   margin: 4px 0 0;
   overflow-wrap: anywhere;
 }
+.orders-index {
+  min-height: 620px;
+}
+.orders-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.65fr);
+  gap: 70px;
+  align-items: end;
+  margin-bottom: 44px;
+}
+.orders-heading h1 {
+  font-size: clamp(2.8rem, 5vw, 5rem);
+  margin: 18px 0;
+}
+.orders-heading > div > p {
+  max-width: 650px;
+}
+.orders-heading aside {
+  padding: 24px;
+  border-left: 4px solid var(--green);
+  background: var(--navy);
+  color: white;
+}
+.orders-heading aside p {
+  color: #dfe7f5;
+  margin-top: 6px;
+  font-size: 14px;
+}
+.saved-orders {
+  display: grid;
+  gap: 18px;
+}
+.saved-order-card {
+  padding: 28px 30px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: white;
+}
+.saved-order-heading,
+.saved-order-footer,
+.saved-order-items > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+}
+.saved-order-heading h2 {
+  margin-top: 4px;
+  font-size: 25px;
+}
+.saved-order-date {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.saved-order-items {
+  margin: 22px 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.saved-order-items > div {
+  padding: 7px 0;
+}
+.saved-order-footer p strong {
+  margin-left: 8px;
+  color: var(--ink);
+  font-size: 20px;
+}
+.orders-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 60px;
+  background: var(--pale);
+}
+.orders-loading span {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--line);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: orders-spin 0.8s linear infinite;
+}
+.orders-notice {
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  background: #fff4cf;
+  color: #765300;
+}
+.orders-empty {
+  margin-top: 0;
+}
+@keyframes orders-spin {
+  to { transform: rotate(360deg); }
+}
 @media (min-width: 1600px) {
   .hero-copy {
     padding-left: 65px;
@@ -1132,6 +1230,18 @@ footer {
   }
   .order-details dl {
     grid-template-columns: 1fr;
+  }
+  .orders-heading {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .orders-heading aside {
+    max-width: 520px;
+  }
+  .saved-order-heading,
+  .saved-order-footer {
+    align-items: flex-start;
+    flex-direction: column;
   }
   .announcement a {
     display: none;

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>惟木匠心</title>
+    <script type="module" crossorigin src="/assets/index-ChgwR87I.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/@vue-DsFaTyME.js">
+    <link rel="modulepreload" crossorigin href="/assets/pinia-CB5CMuGF.js">
+    <link rel="modulepreload" crossorigin href="/assets/lodash-es-DVGGNlzX.js">
+    <link rel="modulepreload" crossorigin href="/assets/@vueuse-Bo3y5wyy.js">
+    <link rel="modulepreload" crossorigin href="/assets/@element-plus-Bf5SMSLp.js">
+    <link rel="modulepreload" crossorigin href="/assets/async-validator-9PlIezaS.js">
+    <link rel="modulepreload" crossorigin href="/assets/@popperjs-C5az9QE8.js">
+    <link rel="modulepreload" crossorigin href="/assets/@ctrl-C4Rzlq_k.js">
+    <link rel="modulepreload" crossorigin href="/assets/dayjs-m4oIJU2G.js">
+    <link rel="modulepreload" crossorigin href="/assets/memoize-one-BdPwpGay.js">
+    <link rel="modulepreload" crossorigin href="/assets/normalize-wheel-es-BQoi3Ox2.js">
+    <link rel="modulepreload" crossorigin href="/assets/@floating-ui-DCXYYTka.js">
+    <link rel="modulepreload" crossorigin href="/assets/element-plus-DGaum7_W.js">
+    <link rel="modulepreload" crossorigin href="/assets/axios-DhXgJQ-f.js">
+    <link rel="modulepreload" crossorigin href="/assets/vue-router-BywH1aiN.js">
+    <link rel="stylesheet" crossorigin href="/assets/element-plus-Bf6_mKuS.css">
+    <link rel="stylesheet" crossorigin href="/assets/index-bFmJ2iDP.css">
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+</html>

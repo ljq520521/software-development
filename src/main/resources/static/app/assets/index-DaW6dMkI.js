@@ -1,0 +1,1 @@
+function a(p=""){return p.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/^### (.*)$/gm,"<h3>$1</h3>").replace(/^## (.*)$/gm,"<h2>$1</h2>").replace(/^# (.*)$/gm,"<h1>$1</h1>").replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>").split(/\n\n+/).map(e=>/^<h[1-3]>/.test(e)?e:`<p>${e.replace(/\n/g,"<br>")}</p>`).join("")}export{a as m};

@@ -1,0 +1,1 @@
+import{a as e}from"./index-Bk28qE1Q.js";const n={list(t={}){return e.get("/content",{params:t})},get(t){return e.get(`/content/${t}`)},faqs(t={}){return e.get("/faqs",{params:t})},site(){return e.get("/site")},home(){return e.get("/home")}};export{n as c};

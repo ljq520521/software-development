@@ -74,6 +74,7 @@ class BuildingBlockWebApplicationTests {
             "/",
             "/products",
             "/products/mini-bowling-play-set",
+            "/orders",
             "/play",
             "/play/five-ways-to-play-together",
             "/about",

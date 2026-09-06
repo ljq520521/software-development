@@ -40,6 +40,7 @@
 | `/products` | 产品筛选与搜索 | `GET /categories`、`GET /products` |
 | `/products/{slug}` | 产品详情 | `GET /products/{slug}` |
 | `/checkout?product_id={id}` | 填写收货信息并创建订单 | `POST /orders` |
+| `/orders` | 显示当前浏览器保存的订单 | 逐项调用 `GET /orders/{number}` |
 | `/orders/{number}?token={token}` | 使用私有令牌查询和支付订单 | `GET /orders/{number}`、`POST /orders/{number}/payments` |
 | `/play`、`/play/{slug}` | 玩法文章 | `GET /content?type=article`、`GET /content/{slug}` |
 | `/about`、`/quality-safety` | 品牌介绍与质量信息 | `GET /content/{slug}` |
