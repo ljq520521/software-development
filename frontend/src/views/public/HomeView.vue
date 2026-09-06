@@ -26,7 +26,15 @@ const enabled = (name) => home.value?.enabled_sections?.includes(name)
       <!-- Hero 双栏 -->
       <section v-if="enabled('hero') && home.hero" class="hero container">
         <div class="hero-copy">
-          <span class="eyebrow"><i></i> 玩出你的方式</span>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="eyebrow"><i></i> 玩出你的方式</span>
+            <span class="brick-dots" aria-hidden="true">
+              <i class="brick brick--yellow"></i>
+              <i class="brick brick--green"></i>
+              <i class="brick brick--blue"></i>
+              <i class="brick brick--pink"></i>
+            </span>
+          </div>
           <h1>{{ home.hero.title }}</h1>
           <p>{{ home.hero.subtitle }}</p>
           <div class="hero-actions">
@@ -48,6 +56,12 @@ const enabled = (name) => home.value?.enabled_sections?.includes(name)
             :alt="home.hero.image.alt"
             fetchpriority="high"
           />
+          <div class="brick-tower hero-bricks" aria-hidden="true">
+            <i class="brick brick--yellow brick--lg"></i>
+            <i class="brick brick--green brick--md"></i>
+            <i class="brick brick--blue brick--sm"></i>
+            <i class="brick brick--pink brick--md"></i>
+          </div>
           <div class="hero-orbit" aria-hidden="true">一起<br />动起来<br />· 2026 ·</div>
           <div class="photo-label">
             <span>一套玩具 · 无数故事</span>
@@ -62,6 +76,12 @@ const enabled = (name) => home.value?.enabled_sections?.includes(name)
           <span class="eyebrow"><i></i> 选择你的玩法</span>
           <h2>小小的运动<br />带来大大的成长。</h2>
           <p>选一个起点,下一个灵感属于孩子们。</p>
+          <div class="brick-pile" aria-hidden="true" style="margin-top: 24px;">
+            <i class="brick brick--blue b1"></i>
+            <i class="brick brick--yellow b2"></i>
+            <i class="brick brick--green b3"></i>
+            <i class="brick brick--pink b4"></i>
+          </div>
         </div>
         <div class="category-links">
           <router-link
@@ -117,7 +137,11 @@ const enabled = (name) => home.value?.enabled_sections?.includes(name)
       <!-- 经销商 CTA -->
       <section v-if="enabled('dealer_cta') && home.dealer_cta" class="page-section container">
         <div class="dealer-cta">
-          <div>
+          <div class="brick-tower" aria-hidden="true" style="position: absolute; left: 28px; top: 26px; opacity: .9;">
+            <i class="brick brick--yellow brick--md"></i>
+            <i class="brick brick--blue brick--sm"></i>
+          </div>
+          <div style="margin-left: 84px;">
             <span class="eyebrow"><i></i> 合作伙伴</span>
             <h2>{{ home.dealer_cta.title }}</h2>
             <p>{{ home.dealer_cta.description }}</p>

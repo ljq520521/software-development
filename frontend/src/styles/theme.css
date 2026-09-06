@@ -20,9 +20,52 @@
   --wemove-accent: #c98a3d;     /* 强调橙棕 */
   --wemove-yellow: #f2ca58;     /* 点缀黄 */
   --wemove-coral: #eb765f;      /* 点缀珊瑚 */
+  /* 积木主题色(取自原站 wemovetoy.com logo) */
+  --brick-yellow: #ebe039;
+  --brick-green: #77b260;
+  --brick-blue: #2991c8;
+  --brick-pink: #e2b6c5;
   --radius: 14px;
   --shadow: 0 14px 34px rgba(92, 78, 61, 0.12);
 }
+
+/* ================= 积木装饰元素 ================= */
+.brick {
+  display: block;
+  border-radius: 7px;
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.10), 0 3px 6px rgba(92, 78, 61, 0.14);
+}
+.brick--yellow { background: var(--brick-yellow); }
+.brick--green { background: var(--brick-green); }
+.brick--blue { background: var(--brick-blue); }
+.brick--pink { background: var(--brick-pink); }
+
+/* 堆叠的积木塔 */
+.brick-tower {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 6px;
+}
+.brick-tower .brick--lg { width: 54px; height: 24px; }
+.brick-tower .brick--md { width: 44px; height: 22px; }
+.brick-tower .brick--sm { width: 34px; height: 20px; }
+
+/* 散落的积木组合 */
+.brick-pile {
+  position: relative;
+  width: 120px;
+  height: 90px;
+}
+.brick-pile .brick { position: absolute; }
+.brick-pile .b1 { width: 56px; height: 26px; left: 0; bottom: 0; transform: rotate(-6deg); }
+.brick-pile .b2 { width: 48px; height: 24px; left: 40px; bottom: 10px; transform: rotate(8deg); }
+.brick-pile .b3 { width: 40px; height: 20px; left: 10px; bottom: 30px; transform: rotate(-2deg); }
+.brick-pile .b4 { width: 34px; height: 18px; left: 66px; bottom: 36px; transform: rotate(14deg); }
+
+/* 小积木点缀(圆点) */
+.brick-dots { display: flex; gap: 8px; }
+.brick-dots .brick { width: 18px; height: 18px; border-radius: 5px; }
 
 * { box-sizing: border-box; }
 
@@ -84,17 +127,17 @@ img { max-width: 100%; }
   white-space: nowrap;
 }
 .brand .logo-mark {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: 12px;
-  background: var(--wemove-brown);
-  color: var(--wemove-cream);
+  overflow: hidden;
+  background: var(--wemove-cream);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 17px;
-  font-weight: 900;
 }
+.brand .logo-mark img { width: 100%; height: 100%; object-fit: contain; }
+.brand.light .logo-mark { background: rgba(255, 255, 255, 0.12); }
 .brand small {
   display: block;
   font-size: 10.5px;
@@ -205,6 +248,13 @@ img { max-width: 100%; }
   border-radius: 14px;
   transform: rotate(4deg);
   box-shadow: 0 8px 20px rgba(92, 78, 61, 0.18);
+}
+.hero-bricks {
+  position: absolute;
+  left: 22px;
+  top: -30px;
+  transform: rotate(-3deg);
+  z-index: 2;
 }
 .photo-label {
   position: absolute;
@@ -413,7 +463,7 @@ img { max-width: 100%; }
   background: var(--wemove-brown);
   color: var(--wemove-white);
   border-radius: 22px;
-  padding: 40px 44px;
+  padding: 40px 44px 40px 110px;
   display: flex;
   align-items: center;
   justify-content: space-between;

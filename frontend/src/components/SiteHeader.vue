@@ -22,7 +22,7 @@ onMounted(async () => {
     <header class="site-header">
       <div class="inner">
         <router-link to="/" class="brand">
-          <span class="logo-mark">W</span>
+          <span class="logo-mark"><img src="/wemove-logo.png" alt="WEMOVE SPORTS" /></span>
           <span>
             {{ site?.brand_name || 'WEMOVE SPORTS' }}
             <small>运动 · 玩乐 · 成长</small>

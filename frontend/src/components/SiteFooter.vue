@@ -17,8 +17,8 @@ onMounted(async () => {
   <footer class="site-footer">
     <div class="footer-main">
       <div>
-        <router-link to="/" class="brand" style="color: #fff;">
-          <span class="logo-mark" style="background: var(--wemove-tan); color: var(--wemove-brown-dark);">W</span>
+        <router-link to="/" class="brand light" style="color: #fff;">
+          <span class="logo-mark"><img src="/wemove-logo.png" alt="WEMOVE SPORTS" /></span>
           <span>
             {{ site?.brand_name || 'WEMOVE SPORTS' }}
             <small style="color: rgba(255,255,255,.55);">运动 · 玩乐 · 成长</small>
