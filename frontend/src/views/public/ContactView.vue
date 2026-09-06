@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -49,11 +49,27 @@ onMounted(async () => {
 async function submit() {
   error.value = ''
   if (!form.privacy_consent) {
-    error.value = 'Please accept the 隐私政策.'
+    error.value = '请先同意隐私政策。'
     return
   }
   if (form.type === 'product_question' && !form.product_id) {
     error.value = '请选择您要咨询的产品。'
+    return
+  }
+  if (!form.name.trim() || !form.email.trim() || !form.subject.trim()) {
+    error.value = '请填写姓名、邮箱和主题。'
+    return
+  }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email.trim())) {
+    error.value = '请输入有效的电子邮箱。'
+    return
+  }
+  if (!/^[A-Za-z]{2}$/.test(form.country.trim())) {
+    error.value = '国家/地区请输入两位国家代码,如 CN。'
+    return
+  }
+  if (form.message.trim().length < 10) {
+    error.value = '留言内容至少 10 个字符。'
     return
   }
   submitting.value = true

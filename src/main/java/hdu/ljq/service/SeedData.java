@@ -239,7 +239,7 @@ public class SeedData implements ApplicationRunner {
           createContent(
               "article",
               "five-ways-to-play-together",
-              "Five little ways to move together",
+              "五个一起动起来的小方法",
               "让平凡的时刻多一点乐趣。",
               "## 从小处开始\n"
                   + "留出十分钟,选一个舒适的空间,让每个人都帮忙决定玩什么。\n\n"

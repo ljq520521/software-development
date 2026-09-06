@@ -70,6 +70,22 @@ async function submit() {
     error.value = '请填写所有必填字段。'
     return
   }
+  if (form.customer_name.trim().length < 2) {
+    error.value = '收件人姓名至少 2 个字符。'
+    return
+  }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) {
+    error.value = '请输入有效的电子邮箱。'
+    return
+  }
+  if (form.phone.trim().length < 6) {
+    error.value = '联系电话至少 6 个字符(必填)。'
+    return
+  }
+  if (!/^[A-Za-z]{2}$/.test(form.country.trim())) {
+    error.value = '国家/地区请输入两位国家代码,如 CN。'
+    return
+  }
   submitting.value = true
   try {
     if (!idempotencyKey) idempotencyKey = newIdempotencyKey()
@@ -125,7 +141,7 @@ async function submit() {
                   <el-form-item label="电子邮箱 *"><el-input v-model="form.email" /></el-form-item>
                 </el-col>
                 <el-col :span="12">
-                  <el-form-item label="联系电话"><el-input v-model="form.phone" /></el-form-item>
+                  <el-form-item label="联系电话 *"><el-input v-model="form.phone" placeholder="至少 6 个字符" /></el-form-item>
                 </el-col>
                 <el-col :span="12">
                   <el-form-item label="国家/地区 *"><el-input v-model="form.country" maxlength="2" placeholder="两位国家代码,如 CN" /></el-form-item>

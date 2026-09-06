@@ -1,6 +1,7 @@
-﻿<script setup>
-import { ref, onMounted } from 'vue'
+<script setup>
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { marked } from 'marked'
 import { api } from '../../api'
 
 const route = useRoute()
@@ -9,6 +10,10 @@ const support = ref(null)
 const loading = ref(true)
 
 const isFaq = route.path.endsWith('/faq')
+
+const renderedSupport = computed(() =>
+  support.value ? marked.parse(support.value.body_markdown || '') : '',
+)
 
 onMounted(async () => {
   try {
@@ -33,8 +38,8 @@ onMounted(async () => {
 
     <el-card v-if="support" shadow="never" class="admin-card">
       <h2 style="margin-bottom: 6px;">{{ support.title }}</h2>
-      <p style="white-space: pre-line; color: var(--wemove-text-light);">{{ support.excerpt }}</p>
-      <p style="white-space: pre-line; line-height: 1.8;">{{ support.body_markdown }}</p>
+      <p style="color: var(--wemove-text-light);">{{ support.excerpt }}</p>
+      <div class="markdown-body" v-html="renderedSupport"></div>
     </el-card>
 
     <el-card shadow="never" class="admin-card">
@@ -45,7 +50,7 @@ onMounted(async () => {
           <p style="white-space: pre-line; margin: 0;">{{ f.answer }}</p>
         </el-collapse-item>
       </el-collapse>
-      <el-empty v-else description="No 常见问题 entries." />
+      <el-empty v-else description="暂无常见问题。" />
     </el-card>
 
     <div style="text-align: center; margin-top: 10px;">

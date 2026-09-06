@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { api } from '../../api'
@@ -52,6 +52,26 @@ async function submit() {
   }
   if (!form.company_name || !form.contact_name || !form.email || !form.country) {
     error.value = '请填写所有必填字段。'
+    return
+  }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email.trim())) {
+    error.value = '请输入有效的电子邮箱。'
+    return
+  }
+  if (form.phone.trim().length < 3) {
+    error.value = '联系电话至少 3 个字符。'
+    return
+  }
+  if (!/^[A-Za-z]{2}$/.test(form.country.trim())) {
+    error.value = '国家/地区请输入两位国家代码,如 CN。'
+    return
+  }
+  if (form.website.trim() && !/^https?:\/\/.+\..+/.test(form.website.trim())) {
+    error.value = '企业网站需为有效的 http(s) 网址,或留空。'
+    return
+  }
+  if (form.message.trim().length < 10) {
+    error.value = '合作需求至少 10 个字符。'
     return
   }
   submitting.value = true
