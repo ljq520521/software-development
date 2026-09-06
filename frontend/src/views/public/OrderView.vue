@@ -1,8 +1,9 @@
-﻿<script setup>
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { api } from '../../api'
+import { saveOrder } from '../../utils/orders'
 import { formatCents, formatDateTime } from '../../utils/format'
 
 const route = useRoute()
@@ -40,6 +41,15 @@ onMounted(async () => {
     const token = route.query.token
     if (!token) throw Object.assign(new Error('缺少访问令牌'), { response: { status: 400 } })
     order.value = await api.getOrder(route.params.number, token)
+    // 同步最新状态到本地"我的订单"记录
+    saveOrder({
+      number: order.value.order_number,
+      token,
+      name: order.value.items?.[0]?.product_name || '',
+      total_cents: order.value.total_cents,
+      status: order.value.status,
+      created_at: order.value.created_at,
+    })
   } catch (e) {
     error.value = e.response?.status === 404 ? '订单不存在或令牌无效。' : '订单加载失败。'
   } finally {
@@ -55,9 +65,18 @@ async function pay() {
       access_token: route.query.token,
       method: selectedMethod.value,
     })
-    ElMessage.success('支付 succeeded (demo)')
+    ElMessage.success('支付成功(演示)')
+    // 支付后同步最新状态到本地"我的订单"记录
+    saveOrder({
+      number: order.value.order_number,
+      token: route.query.token,
+      name: order.value.items?.[0]?.product_name || '',
+      total_cents: order.value.total_cents,
+      status: order.value.status,
+      created_at: order.value.created_at,
+    })
   } catch (e) {
-    ElMessage.error(e.response?.data?.message || '支付 failed')
+    ElMessage.error(e.response?.data?.message || '支付失败')
   } finally {
     paying.value = false
   }

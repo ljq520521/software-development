@@ -1,9 +1,9 @@
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { api } from '../../api'
-import { loadOrders, removeOrder } from '../../utils/orders'
+import { loadOrders, saveOrder, removeOrder } from '../../utils/orders'
 import { formatCents, formatDateTime } from '../../utils/format'
 
 const router = useRouter()
@@ -11,6 +11,7 @@ const router = useRouter()
 const form = reactive({ number: '', token: '' })
 const searching = ref(false)
 const error = ref('')
+const refreshing = ref(false)
 
 const myOrders = computed(() => loadOrders())
 
@@ -23,6 +24,34 @@ const statusLabels = {
   cancelled: '已取消',
   refunded: '已退款',
 }
+
+// 打开页面时刷新本地订单的最新状态(有令牌的逐一查询,失败忽略)
+async function refreshStatuses() {
+  const list = loadOrders()
+  if (!list.length) return
+  refreshing.value = true
+  await Promise.all(
+    list.map(async (o) => {
+      if (!o.number || !o.token) return
+      try {
+        const latest = await api.getOrder(o.number, o.token)
+        saveOrder({
+          number: latest.order_number,
+          token: o.token,
+          name: o.name,
+          total_cents: latest.total_cents,
+          status: latest.status,
+          created_at: latest.created_at,
+        })
+      } catch {
+        /* 令牌失效/网络异常时保留本地记录 */
+      }
+    }),
+  )
+  refreshing.value = false
+}
+
+onMounted(refreshStatuses)
 
 async function search() {
   error.value = ''
@@ -92,7 +121,7 @@ function handleRemove(order) {
     </div>
 
     <div class="admin-card">
-      <h2>本浏览器保存的订单</h2>
+      <h2>本浏览器保存的订单 <el-tag v-if="refreshing" size="small" type="info" style="margin-left: 8px;">正在刷新状态…</el-tag></h2>
       <el-empty v-if="!myOrders.length" description="暂无保存的订单。提交订单或查询后会自动记录。" />
       <el-table v-else :data="myOrders" size="small">
         <el-table-column prop="number" label="订单号" min-width="200" />
