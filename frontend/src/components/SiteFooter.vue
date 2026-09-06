@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { ref, onMounted } from 'vue'
 import { api } from '../api'
 
@@ -35,6 +35,7 @@ onMounted(async () => {
         <router-link to="/products">全部产品</router-link>
         <router-link to="/play">玩乐指南</router-link>
         <router-link to="/support">帮助中心</router-link>
+        <router-link to="/orders/search">我的订单</router-link>
         <router-link to="/contact">联系我们</router-link>
       </div>
       <div>
