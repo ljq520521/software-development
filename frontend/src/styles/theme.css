@@ -1,0 +1,467 @@
+:root {
+  /* 品牌色(参考 wemovetoy.com 木质感棕/米色系) */
+  --wemove-brown: #5C4E3D;
+  --wemove-brown-dark: #43392d;
+  --wemove-tan: #A89880;
+  --wemove-tan-light: #C4B8A8;
+  --wemove-cream: #f0ede8;
+  --wemove-bg: #faf9f7;
+  --wemove-text: #3a342c;
+  --wemove-text-light: #6f675a;
+  --wemove-accent: #c98a3d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--wemove-bg);
+  color: var(--wemove-text);
+  font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+}
+
+/* ===== 站点布局 ===== */
+.site-header {
+  background: var(--wemove-brown);
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.site-header .inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.brand .logo-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--wemove-tan);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--wemove-brown-dark);
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.site-nav {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.site-nav a {
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 14.5px;
+  color: rgba(255, 255, 255, 0.92);
+  transition: background 0.15s;
+}
+
+.site-nav a:hover,
+.site-nav a.router-link-active {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.site-footer {
+  background: var(--wemove-brown-dark);
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 64px;
+}
+
+.site-footer .inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px 28px;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 32px;
+}
+
+.site-footer h4 {
+  margin: 0 0 12px;
+  color: #fff;
+  font-size: 15px;
+}
+
+.site-footer a {
+  display: block;
+  margin: 6px 0;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 13.5px;
+}
+
+.site-footer a:hover {
+  color: #fff;
+}
+
+.site-footer .copyright {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ===== 通用容器与模块 ===== */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.page-section {
+  padding: 48px 0 8px;
+}
+
+.section-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--wemove-brown);
+  margin: 0 0 8px;
+}
+
+.section-subtitle {
+  color: var(--wemove-text-light);
+  margin: 0 0 24px;
+  font-size: 15px;
+}
+
+/* Hero */
+.hero {
+  position: relative;
+  background: var(--wemove-cream);
+  overflow: hidden;
+}
+
+.hero img.hero-img {
+  width: 100%;
+  height: 480px;
+  object-fit: cover;
+  display: block;
+}
+
+.hero .hero-copy {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0 max(24px, calc((100vw - 1200px) / 2 + 20px));
+  background: linear-gradient(90deg, rgba(67, 57, 45, 0.72), rgba(67, 57, 45, 0.12) 70%);
+  color: #fff;
+}
+
+.hero .hero-copy h1 {
+  font-size: clamp(30px, 5vw, 52px);
+  margin: 0 0 14px;
+  max-width: 640px;
+  line-height: 1.15;
+}
+
+.hero .hero-copy p {
+  font-size: clamp(15px, 2vw, 19px);
+  max-width: 560px;
+  margin: 0 0 26px;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* 卡片网格 */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 22px;
+}
+
+.product-card {
+  background: #fff;
+  border: 1px solid #e8e3da;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.18s, box-shadow 0.18s;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(92, 78, 61, 0.12);
+}
+
+.product-card .thumb {
+  aspect-ratio: 4 / 3;
+  background: var(--wemove-cream);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.product-card .thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-card .body {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.product-card .name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--wemove-brown-dark);
+}
+
+.product-card .meta {
+  font-size: 12.5px;
+  color: var(--wemove-text-light);
+}
+
+.product-card .price-row {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+}
+
+.product-card .price {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--wemove-accent);
+}
+
+/* 按钮 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 22px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-primary {
+  background: var(--wemove-brown);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--wemove-brown-dark);
+}
+
+.btn-outline {
+  background: transparent;
+  border-color: var(--wemove-tan);
+  color: var(--wemove-brown);
+}
+
+.btn-outline:hover {
+  background: var(--wemove-cream);
+}
+
+/* 内容页 */
+.content-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 44px 20px 20px;
+  background: #fff;
+  border: 1px solid #e8e3da;
+  border-radius: 12px;
+}
+
+.content-page h1 {
+  color: var(--wemove-brown);
+  font-size: 28px;
+  margin: 0 0 8px;
+}
+
+.content-page .markdown-body {
+  line-height: 1.75;
+  font-size: 15.5px;
+}
+
+.content-page .markdown-body h2 {
+  color: var(--wemove-brown);
+  margin-top: 28px;
+}
+
+/* 表格/分页等 Element 微调 */
+.el-table {
+  --el-table-header-bg-color: #f5f2ec;
+  --el-table-header-text-color: var(--wemove-brown-dark);
+}
+
+.el-pagination {
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* 后台布局 */
+.admin-shell {
+  display: flex;
+  min-height: 100vh;
+  background: #f6f4f0;
+}
+
+.admin-sidebar {
+  width: 220px;
+  background: var(--wemove-brown-dark);
+  color: #fff;
+  flex-shrink: 0;
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
+}
+
+.admin-sidebar .admin-brand {
+  padding: 18px 16px;
+  font-weight: 700;
+  font-size: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-sidebar .el-menu {
+  border-right: none;
+  background: transparent;
+}
+
+.admin-sidebar .el-menu-item {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.admin-sidebar .el-menu-item:hover,
+.admin-sidebar .el-menu-item.is-active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.admin-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-topbar {
+  height: 56px;
+  background: #fff;
+  border-bottom: 1px solid #e5e0d6;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 24px;
+  gap: 16px;
+}
+
+.admin-content {
+  padding: 24px;
+  flex: 1;
+}
+
+.admin-card {
+  background: #fff;
+  border: 1px solid #e5e0d6;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.admin-card h2 {
+  margin: 0 0 16px;
+  font-size: 18px;
+  color: var(--wemove-brown-dark);
+}
+
+/* 响应式 */
+@media (max-width: 900px) {
+  .site-header .inner {
+    height: auto;
+    flex-direction: column;
+    padding: 12px 16px;
+    gap: 10px;
+  }
+
+  .site-nav {
+    justify-content: center;
+  }
+
+  .site-footer .inner {
+    grid-template-columns: 1fr;
+  }
+
+  .hero img.hero-img {
+    height: 360px;
+  }
+
+  .admin-sidebar {
+    width: 64px;
+  }
+
+  .admin-sidebar .admin-brand span,
+  .admin-sidebar .el-menu-item span {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .hero img.hero-img {
+    height: 300px;
+  }
+}
