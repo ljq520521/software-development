@@ -73,7 +73,7 @@ async function saveProcess() {
       internal_note: processForm.internal_note,
     })
     detail.value = updated
-    ElMessage.success('更新d')
+    ElMessage.success('更新')
     load()
   } catch (e) {
     ElMessage.error(e.response?.data?.message || '更新 failed')

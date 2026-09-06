@@ -42,7 +42,7 @@ async function handleUpload(file) {
   return false
 }
 
-function pick图片(media) {
+function pickImage(media) {
   form.hero.image = { media_id: media.id, alt: media.original_name || '' }
   mediaDialog.value = false
 }
@@ -167,7 +167,7 @@ async function save() {
         </el-form-item>
       </el-form>
       <div class="media-grid">
-        <div v-for="m in mediaList" :key="m.id" class="media-item" @click="pick图片(m)">
+        <div v-for="m in mediaList" :key="m.id" class="media-item" @click="pickImage(m)">
           <img :src="m.url" :alt="m.original_name" loading="lazy" />
           <span>{{ m.original_name }}</span>
         </div>

@@ -10,7 +10,7 @@ const order = ref(null)
 const loading = ref(true)
 const error = ref('')
 const paying = ref(false)
-const selected方式 = ref('demo_card')
+const selectedMethod = ref('demo_card')
 
 const statusLabel = {
   pending_payment: '待支付',
@@ -22,7 +22,7 @@ const statusLabel = {
   refunded: '已退款',
 }
 
-const pay方式s = [
+const payMethods = [
   { value: 'demo_card', label: '演示银行卡' },
   { value: 'demo_alipay', label: '演示支付宝' },
   { value: 'demo_wechat', label: '演示微信支付' },
@@ -53,7 +53,7 @@ async function pay() {
   try {
     order.value = await api.payOrder(order.value.order_number, {
       access_token: route.query.token,
-      method: selected方式.value,
+      method: selectedMethod.value,
     })
     ElMessage.success('支付 succeeded (demo)')
   } catch (e) {
@@ -109,8 +109,8 @@ async function pay() {
 
       <el-card v-if="canPay && !expired" shadow="never" class="admin-card">
         <h2>支付</h2>
-        <el-radio-group v-model="selected方式">
-          <el-radio-button v-for="m in pay方式s" :key="m.value" :value="m.value">{{ m.label }}</el-radio-button>
+        <el-radio-group v-model="selectedMethod">
+          <el-radio-button v-for="m in payMethods" :key="m.value" :value="m.value">{{ m.label }}</el-radio-button>
         </el-radio-group>
         <div style="margin-top: 16px;">
           <el-button type="primary" :loading="paying" @click="pay">支付 {{ formatCents(order.total_cents) }}</el-button>

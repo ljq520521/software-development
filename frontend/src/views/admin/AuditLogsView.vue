@@ -1,7 +1,7 @@
 ﻿<script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { adminApi } from '../../api'
-import { formatDate时间 } from '../../utils/format'
+import { formatDateTime } from '../../utils/format'
 
 const items = ref([])
 const total = ref(0)
@@ -75,7 +75,7 @@ function showDiff(obj) {
           </template>
         </el-table-column>
         <el-table-column label="时间" width="170">
-          <template #default="{ row }">{{ formatDate时间(row.created_at) }}</template>
+          <template #default="{ row }">{{ formatDateTime(row.created_at) }}</template>
         </el-table-column>
       </el-table>
       <el-pagination

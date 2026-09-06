@@ -37,7 +37,7 @@ async function load() {
     if (filters.q) params.q = filters.q
     if (filters.status) params.status = filters.status
     if (filters.type) params.type = filters.type
-    const data = await adminApi.list联系咨询(params)
+    const data = await adminApi.listInquiries(params)
     items.value = data.items
     total.value = data.total
   } finally {
@@ -73,7 +73,7 @@ async function saveProcess() {
       internal_note: processForm.internal_note,
     })
     detail.value = updated
-    ElMessage.success('更新d')
+    ElMessage.success('更新')
     load()
   } catch (e) {
     ElMessage.error(e.response?.data?.message || '更新 failed')

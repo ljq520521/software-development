@@ -23,7 +23,7 @@ async function load() {
     const params = { page: filters.page, page_size: 12 }
     if (filters.q) params.q = filters.q
     if (filters.status) params.status = filters.status
-    const data = await adminApi.list产品管理(params)
+    const data = await adminApi.listProducts(params)
     items.value = data.items
     total.value = data.total
   } finally {

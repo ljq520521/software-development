@@ -56,7 +56,7 @@ onMounted(async () => {
   loading.value = true
   try {
     if (isEdit.value) {
-      const c = await adminApi.get内容(route.params.id)
+      const c = await adminApi.getContent(route.params.id)
       Object.assign(form, {
         version: c.version,
         status: c.status,
@@ -95,9 +95,9 @@ async function save(status) {
   }
   try {
     if (isEdit.value) {
-      await adminApi.patch内容(route.params.id, { ...payload, status })
+      await adminApi.patchContent(route.params.id, { ...payload, status })
     } else {
-      await adminApi.create内容(payload)
+      await adminApi.createContent(payload)
     }
     ElMessage.success(status === 'published' ? '发布ed' : '已保存')
     router.push('/admin/content')

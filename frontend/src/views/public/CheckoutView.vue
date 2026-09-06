@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { api } from '../../api'
 import { newIdempotencyKey } from '../../api/client'
+import { saveOrder } from '../../utils/orders'
 import { formatCents } from '../../utils/format'
 
 const route = useRoute()
@@ -108,6 +109,14 @@ async function submit() {
       idempotencyKey,
     )
     ElMessage.success('订单已创建,请在 30 分钟内完成支付。')
+    saveOrder({
+      number: order.order_number,
+      token: order.access_token,
+      name: product.value.name,
+      total_cents: order.total_cents,
+      status: order.status,
+      created_at: order.created_at,
+    })
     router.push({ path: `/orders/${order.order_number}`, query: { token: order.access_token } })
   } catch (e) {
     error.value = e.response?.data?.message || '订单创建失败。'

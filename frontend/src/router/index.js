@@ -7,6 +7,7 @@ const routes = [
   { path: '/products', name: 'products', component: () => import('../views/public/ProductsView.vue') },
   { path: '/products/:slug', name: 'product-detail', component: () => import('../views/public/ProductDetailView.vue') },
   { path: '/checkout', name: 'checkout', component: () => import('../views/public/CheckoutView.vue') },
+  { path: '/orders/search', name: 'orders-search', component: () => import('../views/public/OrderSearchView.vue') },
   { path: '/orders/:number', name: 'order', component: () => import('../views/public/OrderView.vue') },
   { path: '/play', name: 'play', component: () => import('../views/public/ArticlesView.vue') },
   { path: '/play/:slug', name: 'play-detail', component: () => import('../views/public/ContentView.vue') },

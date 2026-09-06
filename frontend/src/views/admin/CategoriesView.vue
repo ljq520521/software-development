@@ -22,7 +22,7 @@ const form = reactive({
 async function load() {
   loading.value = true
   try {
-    const data = await adminApi.list分类管理({ page: page.value, page_size: 12 })
+    const data = await adminApi.listCategories({ page: page.value, page_size: 12 })
     items.value = data.items
     total.value = data.total
   } finally {
@@ -38,7 +38,7 @@ function openNew() {
   dialog.value = true
 }
 
-function open编辑(row) {
+function openEdit(row) {
   editing.value = row
   Object.assign(form, {
     name: row.name,
@@ -58,7 +58,7 @@ async function save() {
     } else {
       await adminApi.createCategory(form)
     }
-    ElMessage.success('保存d')
+    ElMessage.success('保存')
     dialog.value = false
     load()
   } catch (e) {
@@ -68,7 +68,7 @@ async function save() {
   }
 }
 
-async function toggle启用(row) {
+async function toggleEnabled(row) {
   try {
     await adminApi.patchCategory(row.id, { version: row.version, enabled: !row.enabled })
     load()
@@ -92,12 +92,12 @@ async function toggle启用(row) {
         <el-table-column prop="sort_order" label="排序" width="70" />
         <el-table-column label="启用" width="100">
           <template #default="{ row }">
-            <el-switch :model-value="row.enabled" @change="toggle启用(row)" />
+            <el-switch :model-value="row.enabled" @change="toggleEnabled(row)" />
           </template>
         </el-table-column>
         <el-table-column label="操作" width="100" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" @click="open编辑(row)">编辑</el-button>
+            <el-button size="small" @click="openEdit(row)">编辑</el-button>
           </template>
         </el-table-column>
       </el-table>
