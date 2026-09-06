@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head th:replace="~{fragments :: head}"></head>
-  <body>
+  <body class="home-page">
     <header th:replace="~{fragments :: header}"></header>
     <main>
       <th:block
@@ -9,20 +9,21 @@
         th:if="${#lists.contains(home.enabled_sections,section)}"
         th:switch="${section}"
       >
-        <section th:case="'hero'" class="hero">
+        <section th:case="'hero'" class="hero container">
           <div class="hero-copy">
-            <span class="eyebrow"><i></i> MADE FOR THE WAY WE PLAY</span>
+            <span class="eyebrow"><i></i> PLAY, YOUR WAY</span>
             <h1 th:text="${home.hero.title}"></h1>
             <p th:text="${home.hero.subtitle}"></p>
-            <a class="button primary" th:href="${home.hero.primary_cta.href}"
-              ><span th:text="${home.hero.primary_cta.label}"></span
-              ><span>↗</span></a
-            >
-            <div class="hero-foot">
-              <span class="tiny-arrow">↗</span
-              ><span
-                >For curious minds.<br />And feet that won't sit still.</span
-              >
+            <div class="hero-actions">
+              <a class="button primary" th:href="${home.hero.primary_cta.href}">
+                <span th:text="${home.hero.primary_cta.label}"></span><span aria-hidden="true">↗</span>
+              </a>
+              <a class="round-link" href="/play">See play ideas <span>→</span></a>
+            </div>
+            <div class="hero-proof" aria-label="Collection highlights">
+              <span><strong>06</strong> playful sets</span>
+              <span><strong>03</strong> ways to move</span>
+              <span><strong>∞</strong> new games</span>
             </div>
           </div>
           <div class="hero-visual">
@@ -30,100 +31,94 @@
               th:src="${home.hero.image.url}"
               th:alt="${home.hero.image.alt}"
               fetchpriority="high"
-              width="900"
-              height="720"
+              width="1536"
+              height="1024"
             />
+            <div class="hero-orbit" aria-hidden="true">MOVE<br />TOGETHER<br />· 2026 ·</div>
             <div class="photo-label">
-              <span>PLAY TOGETHER</span
-              ><strong>Good times<br />are a team sport.</strong>
+              <span>ONE KIT. MANY STORIES.</span><strong>Ready when<br />they are.</strong>
             </div>
-            <span class="photo-number">01 / IN MOTION</span>
+            <span class="photo-number">01 / PLAY IN MOTION</span>
           </div>
         </section>
-        <section
-          th:case="'categories'"
-          class="category-band container"
-          th:if="${!#lists.isEmpty(home.categories)}"
-        >
+
+        <section th:case="'categories'" class="category-band container" th:if="${!#lists.isEmpty(home.categories)}">
           <div class="category-intro">
-            <span class="eyebrow">FIND YOUR KIND OF FUN</span>
-            <h2>So many ways<br />to get moving.</h2>
+            <span class="eyebrow"><i></i> CHOOSE YOUR MOVE</span>
+            <h2>A little play<br />goes a long way.</h2>
+            <p>Pick a starting point. The next idea belongs to them.</p>
           </div>
           <div class="category-links">
             <a
               th:each="category,stat:${home.categories}"
               th:href="@{/products(category=${category.slug})}"
-              ><span class="index" th:text="'0'+${stat.count}"></span
-              ><strong th:text="${category.name}"></strong><span>↗</span></a
+              th:classappend="' category-'+${stat.count}"
             >
+              <span class="index" th:text="'0'+${stat.count}"></span>
+              <strong th:text="${category.name}"></strong>
+              <small th:text="${category.description}"></small>
+              <span class="category-arrow">↗</span>
+            </a>
           </div>
         </section>
-        <section
-          th:case="'featured_products'"
-          class="section container"
-          th:if="${!#lists.isEmpty(home.featured_products)}"
-        >
-          <div class="section-heading">
-            <div>
-              <span class="eyebrow">READY, SET, PLAY</span>
-              <h2>Big fun starts here.</h2>
-            </div>
-            <a class="text-link" href="/products">Explore all products ↗</a>
-          </div>
-          <div class="product-grid">
-            <th:block th:each="p:${home.featured_products}"
-              ><th:block
-                th:replace="~{fragments :: productCard(${p})}"
-              ></th:block
-            ></th:block>
-          </div>
-        </section>
-        <section
-          th:case="'articles'"
-          class="play-section"
-          th:if="${!#lists.isEmpty(home.articles)}"
-        >
+
+        <section th:case="'featured_products'" class="section products-showcase" th:if="${!#lists.isEmpty(home.featured_products)}">
           <div class="container">
             <div class="section-heading">
               <div>
-                <span class="eyebrow">PLAY A LITTLE. DISCOVER A LOT.</span>
-                <h2>Make time for together.</h2>
+                <span class="eyebrow"><i></i> BUILT FOR THE NEXT IDEA</span>
+                <h2>Meet the play makers.</h2>
               </div>
-              <a class="text-link" href="/play">More play inspiration ↗</a>
+              <a class="text-link" href="/products">Explore all products <span>↗</span></a>
+            </div>
+            <div class="product-grid home-product-grid">
+              <th:block th:each="p:${home.featured_products}">
+                <th:block th:replace="~{fragments :: productCard(${p})}"></th:block>
+              </th:block>
+            </div>
+          </div>
+        </section>
+
+        <section th:case="'articles'" class="play-section" th:if="${!#lists.isEmpty(home.articles)}">
+          <div class="container">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow"><i></i> PLAY NOTES</span>
+                <h2>Ideas worth trying<br />before dinner.</h2>
+              </div>
+              <a class="text-link" href="/play">More play inspiration <span>↗</span></a>
             </div>
             <div class="article-grid">
-              <a
-                class="article-card"
-                th:each="a:${home.articles}"
-                th:href="@{/play/{slug}(slug=${a.slug})}"
-                ><img
-                  th:if="${!#lists.isEmpty(a.cover)}"
-                  th:src="${a.cover[0].url}"
-                  th:alt="${a.cover[0].alt}"
-                  loading="lazy"
-                  width="800"
-                  height="460"
-                />
+              <a class="article-card" th:each="a,stat:${home.articles}" th:href="@{/play/{slug}(slug=${a.slug})}">
+                <div class="article-image-wrap">
+                  <img
+                    th:if="${!#lists.isEmpty(a.cover)}"
+                    th:src="${a.cover[0].url}"
+                    th:alt="${a.cover[0].alt}"
+                    loading="lazy"
+                    width="900"
+                    height="600"
+                  />
+                  <span th:text="'0'+${stat.count}"></span>
+                </div>
                 <div>
                   <span class="eyebrow">PLAY & LEARN</span>
                   <h3 th:text="${a.title}"></h3>
                   <p th:text="${a.excerpt}"></p>
                   <span class="text-link">Read the story ↗</span>
-                </div></a
-              >
+                </div>
+              </a>
             </div>
           </div>
         </section>
+
         <section th:case="'dealer_cta'" class="partner container">
-          <span class="eyebrow">MORE PLAY. MORE POSSIBILITY.</span>
-          <div>
+          <div class="partner-mark" aria-hidden="true"><span>W</span><span>M</span></div>
+          <div class="partner-copy">
+            <span class="eyebrow"><i></i> MOVE WITH US</span>
             <h2 th:text="${home.dealer_cta.title}"></h2>
-            <div>
-              <p th:text="${home.dealer_cta.description}"></p>
-              <a class="button dark" href="/dealers/apply"
-                ><span th:text="${home.dealer_cta.button_label}"></span> ↗</a
-              >
-            </div>
+            <p th:text="${home.dealer_cta.description}"></p>
+            <a class="button dark" href="/dealers/apply"><span th:text="${home.dealer_cta.button_label}"></span> ↗</a>
           </div>
         </section>
       </th:block>

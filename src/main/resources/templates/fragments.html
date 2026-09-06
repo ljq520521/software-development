@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title th:text="${title}">WEMOVE SPORTS</title>
     <meta name="description" th:content="${description}" />
-    <meta name="theme-color" content="#142a4f" />
+    <meta name="theme-color" content="#f7f4ec" />
     <link rel="icon" href="/assets/favicon.svg" />
     <link rel="stylesheet" href="/assets/site.css" />
     <script src="/assets/site.js" defer></script>
@@ -13,18 +13,19 @@
   <body>
     <header th:fragment="header">
       <div class="announcement">
-        A little movement. A world of possibility.
-        <a href="/play">Discover ways to play <span>↗</span></a>
+        <span>Free demonstration shipping on every play set</span>
+        <a href="/products">Meet the collection <span>↗</span></a>
       </div>
       <div class="nav-wrap">
         <a class="brand" href="/" aria-label="WEMOVE SPORTS homepage"
-          >WE<span>MOVE</span><small>SPORTS</small></a
+          ><span class="brand-symbol" aria-hidden="true"><i></i><i></i><i></i></span
+          ><span class="brand-word">WeMove<small>PLAY IN MOTION</small></span></a
         ><button
           class="menu-button"
           aria-expanded="false"
           aria-controls="navigation"
         >
-          Menu ☰
+          <span>Menu</span><i aria-hidden="true"></i>
         </button>
         <nav id="navigation" aria-label="Main navigation">
           <a href="/products" th:classappend="${current=='products'}?'active'"
@@ -38,7 +39,7 @@
           >
         </nav>
         <a class="nav-cta" href="/dealers/apply"
-          >Become a partner <span>↗</span></a
+          >For partners <span>↗</span></a
         >
       </div>
     </header>
@@ -46,9 +47,10 @@
       <div class="footer-main">
         <div>
           <a class="brand light" href="/"
-            >WE<span>MOVE</span><small>SPORTS</small></a
+            ><span class="brand-symbol" aria-hidden="true"><i></i><i></i><i></i></span
+            ><span class="brand-word">WeMove<small>PLAY IN MOTION</small></span></a
           >
-          <p>More movement.<br />More moments together.</p>
+          <p>Thoughtful tools for small moves,<br />big ideas and time together.</p>
         </div>
         <div>
           <h3>Discover</h3>
@@ -79,7 +81,7 @@
       </div>
       <p class="sample-note">
         Demonstration catalog and payment flow. No real funds are charged.
-        Activity photography is illustrative; product details require confirmation.
+        Product concept visuals show the sample sets described; final specifications require confirmation.
       </p>
     </footer>
     <article th:fragment="productCard(p)" class="product-card">
@@ -90,12 +92,12 @@
           loading="lazy"
           width="640"
           height="480"
-        /><span class="tag">SAMPLE COLLECTION</span
+        /><span class="tag">PLAY SET</span
         ><span class="card-arrow" aria-hidden="true">↗</span></a
       >
       <div class="card-meta">
         <span th:text="${p.category.name}"></span
-        ><span th:text="'Ages '+${p.age_min}+'–'+${p.age_max}"></span>
+        ><span th:text="'AGES '+${p.age_min}+'–'+${p.age_max}"></span>
       </div>
       <h3>
         <a
@@ -104,7 +106,10 @@
         ></a>
       </h3>
       <p th:text="${p.short_description}"></p>
-      <strong class="card-price" th:text="'¥'+${#numbers.formatDecimal(p.price_cents / 100.0,1,2)}">¥99.00</strong>
+      <div class="card-bottom">
+        <strong class="card-price" th:text="'¥'+${#numbers.formatDecimal(p.price_cents / 100.0,1,2)}">¥99.00</strong>
+        <a class="card-view" th:href="@{/products/{slug}(slug=${p.slug})}">View set →</a>
+      </div>
     </article>
     <div
       th:fragment="pagination(result)"

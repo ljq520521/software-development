@@ -20,6 +20,54 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Component
 @Order(10)
 public class SeedData implements ApplicationRunner {
+  private static final List<String> PRODUCT_NAMES =
+      List.of(
+          "Mini Bowling Play Set",
+          "Balance & Move Kit",
+          "Play Anywhere Ball Set",
+          "Family Bowling Challenge",
+          "Jump & Discover Kit",
+          "Outdoor Adventure Set");
+  private static final List<String> PRODUCT_SLUGS =
+      List.of(
+          "mini-bowling-play-set",
+          "balance-move-kit",
+          "play-anywhere-ball-set",
+          "family-bowling-challenge",
+          "jump-discover-kit",
+          "outdoor-adventure-set");
+  private static final List<String> PRODUCT_PHOTOS =
+      List.of(
+          "product-mini-bowling.jpg",
+          "product-balance-move.jpg",
+          "product-play-ball.jpg",
+          "product-family-bowling.jpg",
+          "product-jump-discover.jpg",
+          "product-outdoor-adventure.jpg");
+  private static final List<String> PRODUCT_ALTS =
+      List.of(
+          "Six wooden bowling pins with colored bands and a small blue ball",
+          "Five stepping stones and a wooden balance beam in a bright playroom",
+          "Three soft fabric play balls, marker cones and a canvas carry bag",
+          "A family playing with a ten-pin wooden bowling challenge set",
+          "A child using floor spots, soft hurdles and a cotton jump rope",
+          "Children playing with a portable ball, beanbag, cone and ring-toss set outdoors");
+  private static final List<String> SHORT_DESCRIPTIONS =
+      List.of(
+          "Six smooth wooden pins, one little blue ball and a very satisfying strike.",
+          "Step, balance and build a new path with five stones and a wooden bridge.",
+          "Three soft balls, four marker cones and one carry bag for play wherever you go.",
+          "Ten wooden pins, two balls and score tiles turn the living room into a family lane.",
+          "A jump rope, six activity spots and four soft hurdles for a course that changes every day.",
+          "Balls, beanbags, cones and ring toss come together in one portable backyard challenge.");
+  private static final List<String> COMPONENTS =
+      List.of(
+          "6 beechwood pins · 1 wooden ball",
+          "5 non-slip stepping stones · 1 wooden balance beam",
+          "3 soft fabric balls · 4 marker cones · 1 canvas bag",
+          "10 beechwood pins · 2 wooden balls · score tiles",
+          "1 cotton jump rope · 6 floor spots · 4 soft hurdles",
+          "2 soft balls · 6 beanbags · 4 cones · 3 ring-toss pegs · carry tote");
   private final CatalogService c;
   private final MediaService media;
   private final PasswordEncoder passwords;
@@ -63,44 +111,15 @@ public class SeedData implements ApplicationRunner {
                         "status",
                         "active"));
           }
-          if (c.repository().count(EntityType.SITE) > 0) return;
-          String now = Instant.now().toString();
-          List<String> files =
-              List.of(
-                  "coordination-rope.jpg",
-                  "bowling.jpg",
-                  "outdoor-ball.jpg",
-                  "hero-outdoor.jpg",
-                  "family-play.jpg");
-          List<String> mids = new ArrayList<>();
-          for (String file : files) {
-            try {
-              Path path = media.directory.resolve("sample-" + file);
-              if (!Files.exists(path))
-                Files.copy(new ClassPathResource("static/assets/" + file).getInputStream(), path);
-              var img = ImageIO.read(path.toFile());
-              ObjectNode m =
-                  c.repository()
-                      .create(
-                          EntityType.MEDIA,
-                          node(
-                              "url",
-                              "/media/sample-" + file,
-                              "mime_type",
-                              "image/jpeg",
-                              "byte_size",
-                              Files.size(path),
-                              "width",
-                              img.getWidth(),
-                              "height",
-                              img.getHeight(),
-                              "original_name",
-                              file));
-              mids.add(m.path("id").asText());
-            } catch (Exception e) {
-              throw new IllegalStateException("Unable to initialize sample photos", e);
-            }
+          List<String> files = new ArrayList<>();
+          files.add("wemove-hero-play.jpg");
+          files.addAll(PRODUCT_PHOTOS);
+          List<String> mids = ensureMedia(files);
+          if (c.repository().count(EntityType.SITE) > 0) {
+            refreshExistingDemoCatalog(mids);
+            return;
           }
+          String now = Instant.now().toString();
           List<String> cats = new ArrayList<>();
           String[] names = {"Bowling & aim", "Balance & coordination", "Outdoor games"},
               slugs = {"bowling", "balance", "outdoor"};
@@ -122,32 +141,16 @@ public class SeedData implements ApplicationRunner {
                             i))
                     .path("id")
                     .asText());
-          String[] products = {
-            "Mini Bowling Play Set",
-            "Balance & Move Kit",
-            "Play Anywhere Ball Set",
-            "Family Bowling Challenge",
-            "Jump & Discover Kit",
-            "Outdoor Adventure Set"
-          };
-          String[] productSlugs = {
-            "mini-bowling-play-set",
-            "balance-move-kit",
-            "play-anywhere-ball-set",
-            "family-bowling-challenge",
-            "jump-discover-kit",
-            "outdoor-adventure-set"
-          };
           List<String> pids = new ArrayList<>();
-          for (int i = 0; i < products.length; i++) {
+          for (int i = 0; i < PRODUCT_NAMES.size(); i++) {
             int category = i % 3;
-            String photo = mids.get(category == 0 ? 1 : category == 1 ? 0 : 2);
+            String photo = mids.get(i + 1);
             ObjectNode p =
                 node(
                     "name",
-                    products[i],
+                    PRODUCT_NAMES.get(i),
                     "slug",
-                    productSlugs[i],
+                    PRODUCT_SLUGS.get(i),
                     "sku",
                     "DEMO-" + (100 + i),
                     "category_id",
@@ -156,20 +159,6 @@ public class SeedData implements ApplicationRunner {
                     9900 + i * 2000,
                     "currency",
                     "CNY",
-                    "short_description",
-                    category == 0
-                        ? "A little aim. A lot of shared fun."
-                        : category == 1
-                            ? "Find your rhythm, one joyful move at a time."
-                            : "Take play outside and make room for discovery.",
-                    "description_markdown",
-                    "## A new way to play together\n"
-                        + "Bring a little movement to everyday moments. Explore easy activities,"
-                        + " invent your own challenges, and enjoy time together.\n\n"
-                        + "## Sample catalog information\n"
-                        + "This is a demonstration record. Activity photography is illustrative and"
-                        + " does not show an actual WEMOVE product. Final product specifications"
-                        + " and safety instructions must be supplied before commercial use.",
                     "age_min",
                     3 + (i % 2),
                     "age_max",
@@ -180,41 +169,11 @@ public class SeedData implements ApplicationRunner {
                     "active",
                     "first_published_at",
                     now);
-            p.set("environments", c.json().valueToTree(List.of("indoor", "outdoor")));
-            p.set(
-                "features",
-                c.json()
-                    .valueToTree(
-                        List.of(
-                            "Discover a new activity together",
-                            "Flexible games for shared play",
-                            "Simple ideas for everyday movement")));
-            p.set(
-                "specifications",
-                c.json()
-                    .valueToTree(
-                        List.of(
-                            Map.of("name", "Catalog type", "value", "Demonstration sample"),
-                            Map.of("name", "Suggested play", "value", "With adult supervision"),
-                            Map.of(
-                                "name",
-                                "Product details",
-                                "value",
-                                "Contact us to confirm specifications"))));
-            p.set(
-                "images",
-                c.json()
-                    .valueToTree(
-                        List.of(
-                            Map.of(
-                                "media_id",
-                                photo,
-                                "alt",
-                                "Illustrative activity photo for " + products[i]))));
+            applyDemoPresentation(p, i, photo);
             p.set(
                 "seo",
                 seo(
-                    products[i],
+                    PRODUCT_NAMES.get(i),
                     "Explore this sample activity collection and contact WEMOVE SPORTS to learn"
                         + " more."));
             pids.add(c.repository().create(EntityType.PRODUCT, p).path("id").asText());
@@ -286,7 +245,8 @@ public class SeedData implements ApplicationRunner {
                   + " operation."
             }
           };
-          for (String[] p : pages) createContent("page", p[0], p[1], p[2], p[3], null, true, now);
+          for (String[] p : pages)
+            createContent("page", p[0], p[1], p[2], p[3], null, null, true, now);
           createContent(
               "article",
               "five-ways-to-play-together",
@@ -301,7 +261,8 @@ public class SeedData implements ApplicationRunner {
                   + "## Keep it playful\n"
                   + "Take turns, celebrate effort and pause when someone needs a break. Always use"
                   + " age-appropriate equipment and adult supervision.",
-              mids.get(0),
+              mids.get(5),
+              "A child creating a movement course with hurdles, floor spots and a jump rope",
               false,
               now);
           createContent(
@@ -318,7 +279,8 @@ public class SeedData implements ApplicationRunner {
                   + "## Pack up with care\n"
                   + "Follow the care instructions for your equipment and check the play area before"
                   + " you leave.",
-              mids.get(3),
+              mids.get(6),
+              "Children exploring an outdoor challenge with balls, beanbags and ring toss",
               false,
               now);
           String[][] faqs = {
@@ -404,7 +366,7 @@ public class SeedData implements ApplicationRunner {
                   "media_id",
                   mids.get(0),
                   "alt",
-                  "Children enjoying an outdoor skipping activity"));
+                  "A family playing together with the WEMOVE active-play collection"));
           hero.set("primary_cta", node("label", "Find your next adventure", "href", "/products"));
           home.set("hero", hero);
           home.set(
@@ -421,6 +383,157 @@ public class SeedData implements ApplicationRunner {
         });
   }
 
+  private List<String> ensureMedia(List<String> files) {
+    List<String> ids = new ArrayList<>();
+    for (String file : files) {
+      try {
+        Path path = media.directory.resolve("sample-" + file);
+        Files.copy(
+            new ClassPathResource("static/assets/" + file).getInputStream(),
+            path,
+            StandardCopyOption.REPLACE_EXISTING);
+        var img = ImageIO.read(path.toFile());
+        ObjectNode values =
+            node(
+                "url",
+                "/media/sample-" + file,
+                "mime_type",
+                "image/jpeg",
+                "byte_size",
+                Files.size(path),
+                "width",
+                img.getWidth(),
+                "height",
+                img.getHeight(),
+                "original_name",
+                file);
+        ObjectNode existing = c.repository().by(EntityType.MEDIA, "original_name", file);
+        ObjectNode saved =
+            existing == null
+                ? c.repository().create(EntityType.MEDIA, values)
+                : c.repository()
+                    .update(
+                        EntityType.MEDIA,
+                        existing.path("id").asText(),
+                        values,
+                        existing.path("version").asInt());
+        ids.add(saved.path("id").asText());
+      } catch (Exception e) {
+        throw new IllegalStateException("Unable to initialize sample photos", e);
+      }
+    }
+    return ids;
+  }
+
+  private void refreshExistingDemoCatalog(List<String> mediaIds) {
+    for (int i = 0; i < PRODUCT_SLUGS.size(); i++) {
+      ObjectNode existing = c.repository().by(EntityType.PRODUCT, "slug", PRODUCT_SLUGS.get(i));
+      if (existing == null || !existing.path("sku").asText().startsWith("DEMO-")) continue;
+      ObjectNode values = node();
+      applyDemoPresentation(values, i, mediaIds.get(i + 1));
+      c.repository()
+          .update(
+              EntityType.PRODUCT,
+              existing.path("id").asText(),
+              values,
+              existing.path("version").asInt());
+    }
+
+    List<ObjectNode> homes = c.repository().all(EntityType.HOME);
+    if (!homes.isEmpty()) {
+      ObjectNode existing = homes.getFirst();
+      ObjectNode hero = existing.path("hero").deepCopy();
+      hero.set(
+          "image",
+          node(
+              "media_id",
+              mediaIds.getFirst(),
+              "alt",
+              "A family playing together with the WEMOVE active-play collection"));
+      ObjectNode values = node();
+      values.set("hero", hero);
+      c.repository()
+          .update(
+              EntityType.HOME,
+              existing.path("id").asText(),
+              values,
+              existing.path("version").asInt());
+    }
+
+    refreshArticleCover(
+        "five-ways-to-play-together",
+        mediaIds.get(5),
+        "A child creating a movement course with hurdles, floor spots and a jump rope");
+    refreshArticleCover(
+        "take-play-outside",
+        mediaIds.get(6),
+        "Children exploring an outdoor challenge with balls, beanbags and ring toss");
+  }
+
+  private void refreshArticleCover(String slug, String mediaId, String alt) {
+    ObjectNode existing = c.repository().by(EntityType.CONTENT, "slug", slug);
+    if (existing == null) return;
+    ObjectNode values = node();
+    values.set("cover", c.json().valueToTree(List.of(Map.of("media_id", mediaId, "alt", alt))));
+    c.repository()
+        .update(
+            EntityType.CONTENT,
+            existing.path("id").asText(),
+            values,
+            existing.path("version").asInt());
+  }
+
+  private void applyDemoPresentation(ObjectNode product, int index, String mediaId) {
+    String playSetting =
+        switch (index) {
+          case 1, 3 -> "Indoor play";
+          case 5 -> "Outdoor play";
+          default -> "Indoor or outdoor play";
+        };
+    product.put("short_description", SHORT_DESCRIPTIONS.get(index));
+    product.put(
+        "description_markdown",
+        "## Everything in the picture\n"
+            + "This sample set includes "
+            + COMPONENTS.get(index)
+            + ". Every item named here is represented in the product image.\n\n"
+            + "## Make the challenge your own\n"
+            + "Start with one simple game, then rearrange the pieces, change the distance or invite"
+            + " another player. The open-ended format makes it easy to create a fresh activity for"
+            + " different spaces and confidence levels.\n\n"
+            + "## Sample catalog information\n"
+            + "This is a product concept for demonstration. Confirm final materials, dimensions and"
+            + " safety instructions before commercial use.");
+    product.set(
+        "environments",
+        c.json()
+            .valueToTree(
+                index == 1 || index == 3
+                    ? List.of("indoor")
+                    : index == 5 ? List.of("outdoor") : List.of("indoor", "outdoor")));
+    product.set(
+        "features",
+        c.json()
+            .valueToTree(
+                List.of(
+                    "The complete set is shown in the product image",
+                    "Rearrange the pieces to create new challenges",
+                    "Designed for movement, imagination and shared play")));
+    product.set(
+        "specifications",
+        c.json()
+            .valueToTree(
+                List.of(
+                    Map.of("name", "Set includes", "value", COMPONENTS.get(index)),
+                    Map.of("name", "Suggested play", "value", playSetting),
+                    Map.of("name", "Catalog status", "value", "Demonstration product concept"))));
+    product.set(
+        "images",
+        c.json()
+            .valueToTree(
+                List.of(Map.of("media_id", mediaId, "alt", PRODUCT_ALTS.get(index)))));
+  }
+
   private void createContent(
       String type,
       String slug,
@@ -428,6 +541,7 @@ public class SeedData implements ApplicationRunner {
       String excerpt,
       String body,
       String mediaId,
+      String mediaAlt,
       boolean system,
       String now) {
     ObjectNode d =
@@ -450,7 +564,7 @@ public class SeedData implements ApplicationRunner {
             now);
     ArrayNode cover = c.json().createArrayNode();
     if (mediaId != null)
-      cover.add(node("media_id", mediaId, "alt", "Illustrative family activity photo"));
+      cover.add(node("media_id", mediaId, "alt", mediaAlt));
     d.set("cover", cover);
     d.set("seo", seo(title, excerpt));
     c.repository().create(EntityType.CONTENT, d);
