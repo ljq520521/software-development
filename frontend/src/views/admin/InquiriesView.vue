@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { adminApi } from '../../api'
@@ -10,17 +10,17 @@ const loading = ref(false)
 const filters = reactive({ q: '', status: '', type: '', page: 1 })
 
 const statusMeta = {
-  new: { type: 'info', label: 'New' },
-  in_progress: { type: 'warning', label: 'In progress' },
-  resolved: { type: 'success', label: 'Resolved' },
-  closed: { type: 'danger', label: 'Closed' },
+  new: { type: 'info', label: '新建' },
+  in_progress: { type: 'warning', label: '处理中' },
+  resolved: { type: 'success', label: '已解决' },
+  closed: { type: 'danger', label: '已关闭' },
 }
 
 const typeLabels = {
-  general: 'General',
-  product_question: 'Product Question',
-  dealer_inquiry: 'Dealer Inquiry',
-  media_business: 'Media & Business',
+  general: '一般咨询',
+  product_question: '产品咨询',
+  dealer_inquiry: '经销商合作',
+  media_business: '媒体与商务',
 }
 
 // 详情与处理
@@ -37,7 +37,7 @@ async function load() {
     if (filters.q) params.q = filters.q
     if (filters.status) params.status = filters.status
     if (filters.type) params.type = filters.type
-    const data = await adminApi.listInquiries(params)
+    const data = await adminApi.list联系咨询(params)
     items.value = data.items
     total.value = data.total
   } finally {
@@ -73,10 +73,10 @@ async function saveProcess() {
       internal_note: processForm.internal_note,
     })
     detail.value = updated
-    ElMessage.success('Updated')
+    ElMessage.success('更新d')
     load()
   } catch (e) {
-    ElMessage.error(e.response?.data?.message || 'Update failed')
+    ElMessage.error(e.response?.data?.message || '更新 failed')
   } finally {
     saving.value = false
   }
@@ -86,43 +86,43 @@ async function saveProcess() {
 <template>
   <div>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-      <h2 style="margin: 0; color: var(--wemove-brown-dark);">Inquiries</h2>
+      <h2 style="margin: 0; color: var(--wemove-brown-dark);">联系咨询</h2>
     </div>
     <div class="admin-card">
       <el-form inline>
-        <el-form-item label="Search">
-          <el-input v-model="filters.q" placeholder="Reference / name / subject" clearable style="width: 220px;" @keyup.enter="search" />
+        <el-form-item label="搜索">
+          <el-input v-model="filters.q" placeholder="回执编号 / 姓名 / 主题" clearable style="width: 220px;" @keyup.enter="search" />
         </el-form-item>
         <el-form-item label="Status">
-          <el-select v-model="filters.status" clearable placeholder="All" style="width: 140px;">
+          <el-select v-model="filters.status" clearable placeholder="全部" style="width: 140px;">
             <el-option v-for="(m, k) in statusMeta" :key="k" :label="m.label" :value="k" />
           </el-select>
         </el-form-item>
-        <el-form-item label="Type">
-          <el-select v-model="filters.type" clearable placeholder="All" style="width: 170px;">
+        <el-form-item label="类型">
+          <el-select v-model="filters.type" clearable placeholder="全部" style="width: 170px;">
             <el-option v-for="(l, k) in typeLabels" :key="k" :label="l" :value="k" />
           </el-select>
         </el-form-item>
-        <el-form-item><el-button type="primary" @click="search">Search</el-button></el-form-item>
+        <el-form-item><el-button type="primary" @click="search">搜索</el-button></el-form-item>
       </el-form>
       <el-table :data="items" v-loading="loading" size="small">
-        <el-table-column prop="reference" label="Reference" width="240" />
-        <el-table-column label="Type" width="140">
+        <el-table-column prop="reference" label="回执编号" width="240" />
+        <el-table-column label="类型" width="140">
           <template #default="{ row }">{{ typeLabels[row.type] || row.type }}</template>
         </el-table-column>
-        <el-table-column prop="name" label="Name" width="140" />
-        <el-table-column prop="subject" label="Subject" min-width="200" />
+        <el-table-column prop="name" label="姓名" width="140" />
+        <el-table-column prop="subject" label="主题" min-width="200" />
         <el-table-column label="Status" width="120">
           <template #default="{ row }">
             <el-tag :type="statusMeta[row.status]?.type || 'info'" size="small">{{ statusMeta[row.status]?.label || row.status }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="Created" width="170">
+        <el-table-column label="提交时间" width="170">
           <template #default="{ row }">{{ formatDateTime(row.created_at) }}</template>
         </el-table-column>
         <el-table-column label="Actions" width="90" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" @click="openDetail(row)">Open</el-button>
+            <el-button size="small" @click="openDetail(row)">查看</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -136,16 +136,16 @@ async function saveProcess() {
       />
     </div>
 
-    <el-drawer v-model="detailVisible" title="Inquiry detail" size="480px">
+    <el-drawer v-model="detailVisible" title="咨询详情" size="480px">
       <div v-loading="detailLoading" v-if="detail">
-        <p><strong>Reference:</strong> {{ detail.reference }}</p>
-        <p><strong>Type:</strong> {{ typeLabels[detail.type] || detail.type }}</p>
-        <p><strong>From:</strong> {{ detail.name }} &lt;{{ detail.email }}&gt; ({{ detail.country }})</p>
-        <p><strong>Subject:</strong> {{ detail.subject }}</p>
-        <p><strong>Message:</strong></p>
+        <p><strong>回执编号:</strong> {{ detail.reference }}</p>
+        <p><strong>类型:</strong> {{ typeLabels[detail.type] || detail.type }}</p>
+        <p><strong>来源:</strong> {{ detail.name }} &lt;{{ detail.email }}&gt; ({{ detail.country }})</p>
+        <p><strong>主题:</strong> {{ detail.subject }}</p>
+        <p><strong>留言:</strong></p>
         <p style="white-space: pre-line; background: #faf9f7; padding: 10px; border-radius: 8px;">{{ detail.message }}</p>
-        <p v-if="detail.product_id"><strong>Product ID:</strong> {{ detail.product_id }}</p>
-        <p><strong>Received:</strong> {{ formatDateTime(detail.consent_at) }}</p>
+        <p v-if="detail.product_id"><strong>产品编号:</strong> {{ detail.product_id }}</p>
+        <p><strong>提交时间:</strong> {{ formatDateTime(detail.consent_at) }}</p>
         <el-divider />
         <el-form label-position="top">
           <el-form-item label="Status">
@@ -153,10 +153,10 @@ async function saveProcess() {
               <el-option v-for="(m, k) in statusMeta" :key="k" :label="m.label" :value="k" />
             </el-select>
           </el-form-item>
-          <el-form-item label="Internal note (required to resolve/close)">
+          <el-form-item label="内部备注(解决/关闭时必填)">
             <el-input v-model="processForm.internal_note" type="textarea" :rows="3" />
           </el-form-item>
-          <el-button type="primary" :loading="saving" @click="saveProcess">Update</el-button>
+          <el-button type="primary" :loading="saving" @click="saveProcess">更新</el-button>
         </el-form>
       </div>
     </el-drawer>

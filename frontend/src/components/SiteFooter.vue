@@ -15,34 +15,44 @@ onMounted(async () => {
 
 <template>
   <footer class="site-footer">
-    <div class="inner">
+    <div class="footer-main">
       <div>
-        <h4>{{ site?.brand_name || 'WEMOVE SPORTS' }}</h4>
-        <p style="font-size: 13.5px; line-height: 1.7; margin: 0;">{{ site?.tagline || 'Sport toys for active families.' }}</p>
-        <p style="font-size: 13px; margin: 12px 0 0;">
-          <a v-if="site?.contact_email" :href="`mailto:${site.contact_email}`">{{ site.contact_email }}</a>
-          <span v-if="site?.contact_phone" style="margin-left: 12px;">{{ site.contact_phone }}</span>
+        <router-link to="/" class="brand" style="color: #fff;">
+          <span class="logo-mark" style="background: var(--wemove-tan); color: var(--wemove-brown-dark);">W</span>
+          <span>
+            {{ site?.brand_name || 'WEMOVE SPORTS' }}
+            <small style="color: rgba(255,255,255,.55);">运动 · 玩乐 · 成长</small>
+          </span>
+        </router-link>
+        <p>{{ site?.tagline || '让每一次动起来都充满乐趣。' }}</p>
+        <p v-if="site?.contact_email">
+          邮箱:<a :href="`mailto:${site.contact_email}`" style="color: var(--wemove-yellow);">{{ site.contact_email }}</a>
         </p>
+        <p v-if="site?.contact_phone">电话:{{ site.contact_phone }}</p>
       </div>
       <div>
-        <h4>Explore</h4>
-        <router-link to="/products">Products</router-link>
-        <router-link to="/play">Play &amp; Learn</router-link>
-        <router-link to="/support">Support</router-link>
-        <router-link to="/contact">Contact</router-link>
+        <h3>探索</h3>
+        <router-link to="/products">全部产品</router-link>
+        <router-link to="/play">玩乐指南</router-link>
+        <router-link to="/support">帮助中心</router-link>
+        <router-link to="/contact">联系我们</router-link>
       </div>
       <div>
-        <h4>Company</h4>
-        <router-link to="/about">About</router-link>
-        <router-link to="/quality-safety">Quality &amp; Safety</router-link>
-        <router-link to="/dealers/apply">Become a Dealer</router-link>
-        <router-link to="/dealers/login">Dealer Sign In</router-link>
-        <router-link to="/privacy">Privacy</router-link>
-        <router-link to="/terms">Terms</router-link>
+        <h3>品牌</h3>
+        <router-link to="/about">品牌故事</router-link>
+        <router-link to="/quality-safety">质量与安全</router-link>
+        <router-link to="/dealers/apply">经销商合作</router-link>
+        <router-link to="/dealers/login">经销商登录</router-link>
+      </div>
+      <div>
+        <h3>法律</h3>
+        <router-link to="/privacy">隐私政策</router-link>
+        <router-link to="/terms">服务条款</router-link>
       </div>
     </div>
-    <div class="copyright">
-      © {{ new Date().getFullYear() }} {{ site?.brand_name || 'WEMOVE SPORTS' }}. All rights reserved.
+    <div class="footer-bottom">
+      <span>© {{ new Date().getFullYear() }} {{ site?.brand_name || 'WEMOVE SPORTS' }} 保留所有权利</span>
+      <span>一起动起来,一起玩出精彩</span>
     </div>
   </footer>
 </template>

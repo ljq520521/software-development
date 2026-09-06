@@ -32,10 +32,10 @@ function search() {
 async function handleUpload(file) {
   try {
     await adminApi.uploadMedia(file.raw)
-    ElMessage.success('Uploaded')
+    ElMessage.success('上传成功')
     load()
   } catch (e) {
-    ElMessage.error(e.response?.data?.message || 'Upload failed')
+    ElMessage.error(e.response?.data?.message || '上传失败')
   }
   return false
 }
@@ -44,17 +44,17 @@ async function handleUpload(file) {
 <template>
   <div>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-      <h2 style="margin: 0; color: var(--wemove-brown-dark);">Media library</h2>
+      <h2 style="margin: 0; color: var(--wemove-brown-dark);">媒体库</h2>
       <el-upload :show-file-list="false" :before-upload="handleUpload" accept="image/jpeg,image/png,image/webp">
-        <el-button type="primary">Upload image</el-button>
+        <el-button type="primary">上传图片</el-button>
       </el-upload>
     </div>
     <div class="admin-card">
       <el-form inline>
-        <el-form-item label="Search">
-          <el-input v-model="filters.q" placeholder="Original file name" clearable style="width: 240px;" @keyup.enter="search" />
+        <el-form-item label="搜索">
+          <el-input v-model="filters.q" placeholder="原始文件名" clearable style="width: 240px;" @keyup.enter="search" />
         </el-form-item>
-        <el-form-item><el-button type="primary" @click="search">Search</el-button></el-form-item>
+        <el-form-item><el-button type="primary" @click="search">搜索</el-button></el-form-item>
       </el-form>
       <div v-loading="loading" class="media-grid">
         <div v-for="m in items" :key="m.id" class="media-item">
@@ -63,7 +63,7 @@ async function handleUpload(file) {
           <div class="media-meta">{{ m.width }}×{{ m.height }} · {{ (m.byte_size / 1024).toFixed(0) }} KB</div>
           <div class="media-meta">{{ formatDateTime(m.created_at) }}</div>
         </div>
-        <el-empty v-if="!items.length && !loading" description="No images" />
+        <el-empty v-if="!items.length && !loading" description="暂无图片" />
       </div>
       <el-pagination
         v-if="total > 0"

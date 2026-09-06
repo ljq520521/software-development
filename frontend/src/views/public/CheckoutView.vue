@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -37,7 +37,7 @@ onMounted(async () => {
   try {
     const productId = route.query.product_id
     if (!productId) {
-      error.value = 'Missing product. Please choose a product first.'
+      error.value = '缺少产品信息,请先选择产品。'
       return
     }
     site.value = await api.getSite()
@@ -51,10 +51,10 @@ onMounted(async () => {
       slug: route.query.slug || '',
     }
     if (!product.value.slug) {
-      error.value = 'Product context expired. Please open the product page again.'
+      error.value = '产品信息已过期,请重新打开产品页面。'
     }
   } catch (e) {
-    error.value = e.response?.data?.message || 'Failed to initialize checkout.'
+    error.value = e.response?.data?.message || '结算初始化失败。'
   } finally {
     loading.value = false
   }
@@ -63,11 +63,11 @@ onMounted(async () => {
 async function submit() {
   error.value = ''
   if (!form.privacy_consent) {
-    error.value = 'Please accept the privacy policy to continue.'
+    error.value = '请先同意隐私政策以继续。'
     return
   }
   if (!form.customer_name || !form.email || !form.address_line1 || !form.city || !form.country) {
-    error.value = 'Please complete all required fields.'
+    error.value = '请填写所有必填字段。'
     return
   }
   submitting.value = true
@@ -91,10 +91,10 @@ async function submit() {
       },
       idempotencyKey,
     )
-    ElMessage.success('Order created. Please complete the payment within 30 minutes.')
+    ElMessage.success('订单已创建,请在 30 分钟内完成支付。')
     router.push({ path: `/orders/${order.order_number}`, query: { token: order.access_token } })
   } catch (e) {
-    error.value = e.response?.data?.message || 'Failed to create order.'
+    error.value = e.response?.data?.message || '订单创建失败。'
   } finally {
     submitting.value = false
   }
@@ -103,11 +103,11 @@ async function submit() {
 
 <template>
   <div class="container page-section" style="max-width: 900px;">
-    <h1 class="section-title">Checkout</h1>
+    <h1 class="section-title">结算</h1>
 
-    <el-result v-if="error && !product" icon="warning" title="Cannot start checkout" :sub-title="error">
+    <el-result v-if="error && !product" icon="warning" title="无法开始结算" :sub-title="error">
       <template #extra>
-        <el-button type="primary" @click="$router.push('/products')">Browse Products</el-button>
+        <el-button type="primary" @click="$router.push('/products')">浏览产品</el-button>
       </template>
     </el-result>
 
@@ -115,40 +115,40 @@ async function submit() {
       <div class="checkout-grid">
         <div>
           <el-card shadow="never" class="admin-card">
-            <h2>Shipping information</h2>
+            <h2>收货信息</h2>
             <el-form label-position="top" @submit.prevent="submit">
               <el-row :gutter="16">
                 <el-col :span="12">
-                  <el-form-item label="Full name *"><el-input v-model="form.customer_name" /></el-form-item>
+                  <el-form-item label="收件人姓名 *"><el-input v-model="form.customer_name" /></el-form-item>
                 </el-col>
                 <el-col :span="12">
-                  <el-form-item label="Email *"><el-input v-model="form.email" /></el-form-item>
+                  <el-form-item label="电子邮箱 *"><el-input v-model="form.email" /></el-form-item>
                 </el-col>
                 <el-col :span="12">
-                  <el-form-item label="Phone"><el-input v-model="form.phone" /></el-form-item>
+                  <el-form-item label="联系电话"><el-input v-model="form.phone" /></el-form-item>
                 </el-col>
                 <el-col :span="12">
-                  <el-form-item label="Country *"><el-input v-model="form.country" maxlength="2" placeholder="Two-letter code, e.g. CN" /></el-form-item>
+                  <el-form-item label="国家/地区 *"><el-input v-model="form.country" maxlength="2" placeholder="两位国家代码,如 CN" /></el-form-item>
                 </el-col>
                 <el-col :span="24">
-                  <el-form-item label="Address line 1 *"><el-input v-model="form.address_line1" /></el-form-item>
+                  <el-form-item label="详细地址 1 *"><el-input v-model="form.address_line1" /></el-form-item>
                 </el-col>
                 <el-col :span="24">
-                  <el-form-item label="Address line 2"><el-input v-model="form.address_line2" /></el-form-item>
+                  <el-form-item label="详细地址 2"><el-input v-model="form.address_line2" /></el-form-item>
                 </el-col>
                 <el-col :span="8">
-                  <el-form-item label="City *"><el-input v-model="form.city" /></el-form-item>
+                  <el-form-item label="城市 *"><el-input v-model="form.city" /></el-form-item>
                 </el-col>
                 <el-col :span="8">
-                  <el-form-item label="Region / State"><el-input v-model="form.region" /></el-form-item>
+                  <el-form-item label="省 / 州"><el-input v-model="form.region" /></el-form-item>
                 </el-col>
                 <el-col :span="8">
-                  <el-form-item label="Postal code"><el-input v-model="form.postal_code" /></el-form-item>
+                  <el-form-item label="邮编"><el-input v-model="form.postal_code" /></el-form-item>
                 </el-col>
                 <el-col :span="24">
                   <el-form-item>
                     <el-checkbox v-model="form.privacy_consent">
-                      I agree to the <router-link to="/privacy" style="text-decoration: underline;">privacy policy</router-link> (version {{ form.privacy_version }})
+                      我已阅读并同意 <router-link to="/privacy" style="text-decoration: underline;">隐私政策</router-link>(版本 {{ form.privacy_version }})
                     </el-checkbox>
                   </el-form-item>
                 </el-col>
@@ -162,19 +162,19 @@ async function submit() {
 
         <div>
           <el-card shadow="never" class="admin-card" style="position: sticky; top: 20px;">
-            <h2>Order summary</h2>
+            <h2>订单摘要</h2>
             <div class="summary-row"><span>{{ product.name }}</span><span>{{ formatCents(product.price_cents) }}</span></div>
             <div class="summary-row">
-              <span>Quantity</span>
+              <span>数量</span>
               <el-input-number v-model="form.quantity" :min="1" :max="20" size="small" />
             </div>
             <el-divider />
-            <div class="summary-row total"><span>Total</span><span>{{ formatCents(totalCents) }}</span></div>
+            <div class="summary-row total"><span>合计</span><span>{{ formatCents(totalCents) }}</span></div>
             <el-button type="primary" style="width: 100%; margin-top: 12px;" :loading="submitting" @click="submit">
-              Place order
+              提交订单
             </el-button>
             <p style="font-size: 12.5px; color: var(--wemove-text-light); margin-top: 10px;">
-              Payment is a local demo gateway — no real card data is collected.
+              支付为本地演示网关,不会采集真实银行卡信息。
             </p>
           </el-card>
         </div>

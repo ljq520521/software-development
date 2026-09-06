@@ -8,26 +8,26 @@ defineProps({
 
 <template>
   <router-link :to="`/products/${product.slug}`" class="product-card">
-    <div class="thumb">
+    <div class="card-image">
       <img
         v-if="product.cover?.url"
         :src="product.cover.url"
         :alt="product.cover.alt || product.name"
         loading="lazy"
       />
-      <span v-else style="color: #b9b1a3;">No image</span>
+      <span v-else style="color: #b9b1a3;">暂无图片</span>
     </div>
-    <div class="body">
-      <div class="name">{{ product.name }}</div>
-      <div class="meta">
+    <div class="card-bottom">
+      <h3>{{ product.name }}</h3>
+      <div class="card-meta">
         <span v-if="product.age_min != null">
-          Age {{ product.age_min }}{{ product.age_max != null && product.age_max !== product.age_min ? `–${product.age_max}` : '+' }}
+          适龄 {{ product.age_min }}{{ product.age_max != null && product.age_max !== product.age_min ? `-${product.age_max}` : '+' }} 岁
         </span>
-        <span v-if="product.environments?.length"> · {{ product.environments.join(' / ') }}</span>
+        <span v-if="product.environments?.length"> · {{ product.environments.includes('indoor') ? '室内' : '' }}{{ product.environments.includes('outdoor') ? '户外' : '' }}</span>
       </div>
-      <div class="price-row">
-        <span class="price">{{ formatCents(product.price_cents) }}</span>
-        <span class="btn btn-primary" style="padding: 6px 14px; font-size: 13px;">View</span>
+      <div class="card-bottom-row">
+        <span class="card-price">{{ formatCents(product.price_cents) }}</span>
+        <span class="card-view">查看 <span class="card-arrow">↗</span></span>
       </div>
     </div>
   </router-link>

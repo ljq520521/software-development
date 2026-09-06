@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { marked } from 'marked'
@@ -21,7 +21,7 @@ onMounted(async () => {
     product.value = await api.getProduct(route.params.slug)
     activeImage.value = 0
   } catch (e) {
-    error.value = e.response?.status === 404 ? 'Product not found.' : 'Failed to load product.'
+    error.value = e.response?.status === 404 ? '产品不存在。' : '产品加载失败。'
   } finally {
     loading.value = false
   }
@@ -30,9 +30,9 @@ onMounted(async () => {
 
 <template>
   <div class="container page-section" v-loading="loading">
-    <el-result v-if="error" icon="warning" title="Oops" :sub-title="error">
+    <el-result v-if="error" icon="warning" title="出错了" :sub-title="error">
       <template #extra>
-        <el-button type="primary" @click="$router.push('/products')">Back to Products</el-button>
+        <el-button type="primary" @click="$router.push('/products')">返回产品列表</el-button>
       </template>
     </el-result>
 
@@ -46,7 +46,7 @@ onMounted(async () => {
               :src="product.images[activeImage].url"
               :alt="product.images[activeImage].alt || product.name"
             />
-            <span v-else style="color:#b9b1a3;">No image</span>
+            <span v-else style="color:#b9b1a3;">暂无图片</span>
           </div>
           <div v-if="product.images?.length > 1" class="pdp-thumbs">
             <img
@@ -76,22 +76,22 @@ onMounted(async () => {
             <router-link
               :to="{ path: '/checkout', query: { product_id: product.id, name: product.name, sku: product.sku, price_cents: product.price_cents, slug: product.slug } }"
               class="btn btn-primary"
-            >Buy now</router-link>
+            >立即购买</router-link>
             <router-link
               :to="{ path: '/contact', query: { product_id: product.id, subject: product.name } }"
               class="btn btn-outline"
-            >Ask a question</router-link>
+            >产品咨询</router-link>
           </div>
 
           <div v-if="product.features?.length" class="pdp-features">
-            <h3>Highlights</h3>
+            <h3>产品亮点</h3>
             <ul>
               <li v-for="(f, i) in product.features" :key="i">{{ f }}</li>
             </ul>
           </div>
 
           <div v-if="product.specifications?.length" class="pdp-specs">
-            <h3>Specifications</h3>
+            <h3>规格参数</h3>
             <table>
               <tbody>
                 <tr v-for="(s, i) in product.specifications" :key="i">
@@ -108,7 +108,7 @@ onMounted(async () => {
         <div class="markdown-body" v-html="renderedDescription"></div>
       </div>
       <p style="text-align:center; color: var(--wemove-text-light); font-size: 12.5px; margin-top: 24px;">
-        Updated {{ formatDate(product.updated_at) }}
+        更新于 {{ formatDate(product.updated_at) }}
       </p>
     </template>
   </div>

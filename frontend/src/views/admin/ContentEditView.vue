@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -38,7 +38,7 @@ async function loadMedia(q) {
 async function handleUpload(file) {
   try {
     const media = await adminApi.uploadMedia(file.raw)
-    ElMessage.success('Uploaded')
+    ElMessage.success('上传成功')
     await loadMedia(mediaSearch.value)
     form.cover = [{ media_id: media.id, alt: media.original_name || '' }]
   } catch (e) {
@@ -56,7 +56,7 @@ onMounted(async () => {
   loading.value = true
   try {
     if (isEdit.value) {
-      const c = await adminApi.getContent(route.params.id)
+      const c = await adminApi.get内容(route.params.id)
       Object.assign(form, {
         version: c.version,
         status: c.status,
@@ -71,7 +71,7 @@ onMounted(async () => {
       })
     }
   } catch (e) {
-    ElMessage.error(e.response?.data?.message || 'Failed to load content')
+    ElMessage.error(e.response?.data?.message || '内容加载失败')
   } finally {
     loading.value = false
   }
@@ -79,7 +79,7 @@ onMounted(async () => {
 
 async function save(status) {
   if (!form.title) {
-    ElMessage.warning('Title is required.')
+    ElMessage.warning('标题为必填项。')
     return
   }
   saving.value = true
@@ -95,14 +95,14 @@ async function save(status) {
   }
   try {
     if (isEdit.value) {
-      await adminApi.patchContent(route.params.id, { ...payload, status })
+      await adminApi.patch内容(route.params.id, { ...payload, status })
     } else {
-      await adminApi.createContent(payload)
+      await adminApi.create内容(payload)
     }
-    ElMessage.success(status === 'published' ? 'Published' : 'Saved')
+    ElMessage.success(status === 'published' ? '发布ed' : '已保存')
     router.push('/admin/content')
   } catch (e) {
-    ElMessage.error(e.response?.data?.message || 'Save failed')
+    ElMessage.error(e.response?.data?.message || '保存失败')
   } finally {
     saving.value = false
   }
@@ -112,16 +112,16 @@ async function save(status) {
 <template>
   <div v-loading="loading">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-      <h2 style="margin: 0; color: var(--wemove-brown-dark);">{{ isEdit ? `Edit content #${route.params.id}` : 'New content' }}</h2>
-      <el-button @click="router.push('/admin/content')">Back</el-button>
+      <h2 style="margin: 0; color: var(--wemove-brown-dark);">{{ isEdit ? `编辑内容 #${route.params.id}` : '新增内容' }}</h2>
+      <el-button @click="router.push('/admin/content')">返回</el-button>
     </div>
 
     <el-form label-position="top">
       <div class="admin-card">
-        <h2>Content</h2>
+        <h2>内容</h2>
         <el-row :gutter="16">
           <el-col :span="8">
-            <el-form-item label="Type">
+            <el-form-item label="类型">
               <el-select v-model="form.type" :disabled="form.is_system" style="width: 100%;">
                 <el-option label="Article" value="article" />
                 <el-option label="Page" value="page" />
@@ -129,7 +129,7 @@ async function save(status) {
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="Slug"><el-input v-model="form.slug" :disabled="form.is_system" /></el-form-item>
+            <el-form-item label="别名"><el-input v-model="form.slug" :disabled="form.is_system" /></el-form-item>
           </el-col>
           <el-col :span="8">
             <el-form-item label="Status">
@@ -137,56 +137,56 @@ async function save(status) {
             </el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-form-item label="Title *"><el-input v-model="form.title" /></el-form-item>
+            <el-form-item label="标题 *"><el-input v-model="form.title" /></el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-form-item label="Excerpt"><el-input v-model="form.excerpt" type="textarea" :rows="2" /></el-form-item>
+            <el-form-item label="摘要"><el-input v-model="form.excerpt" type="textarea" :rows="2" /></el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-form-item label="Body (Markdown)">
+            <el-form-item label="正文(Markdown)">
               <el-input v-model="form.body_markdown" type="textarea" :rows="10" />
             </el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-form-item label="Cover">
+            <el-form-item label="封面">
               <div v-if="form.cover.length" style="display: flex; gap: 10px; align-items: center;">
                 <img :src="form.cover[0].url" alt="" style="width: 120px; height: 80px; object-fit: cover; border-radius: 8px;" />
-                <el-button size="small" @click="form.cover = []">Remove</el-button>
+                <el-button size="small" @click="form.cover = []">移除</el-button>
               </div>
-              <el-button size="small" @click="mediaDialog = true">Choose cover</el-button>
+              <el-button size="small" @click="mediaDialog = true">选择封面</el-button>
             </el-form-item>
           </el-col>
         </el-row>
       </div>
 
       <div class="admin-card">
-        <h2>SEO</h2>
+        <h2>SEO 优化</h2>
         <el-row :gutter="16">
           <el-col :span="12">
-            <el-form-item label="SEO title"><el-input v-model="form.seo.title" /></el-form-item>
+            <el-form-item label="SEO 优化 title"><el-input v-model="form.seo.title" /></el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="SEO description"><el-input v-model="form.seo.description" /></el-form-item>
+            <el-form-item label="SEO 优化 description"><el-input v-model="form.seo.description" /></el-form-item>
           </el-col>
         </el-row>
       </div>
 
       <div style="display: flex; gap: 10px;">
-        <el-button type="primary" :loading="saving" @click="save(form.status || 'draft')">Save draft</el-button>
-        <el-button v-if="!form.is_system" type="success" :loading="saving" @click="save('published')">Publish</el-button>
-        <el-button v-if="isEdit && form.status === 'published'" type="danger" plain :loading="saving" @click="save('archived')">Archive</el-button>
+        <el-button type="primary" :loading="saving" @click="save(form.status || 'draft')">保存草稿</el-button>
+        <el-button v-if="!form.is_system" type="success" :loading="saving" @click="save('published')">发布</el-button>
+        <el-button v-if="isEdit && form.status === 'published'" type="danger" plain :loading="saving" @click="save('archived')">归档</el-button>
       </div>
     </el-form>
 
-    <el-dialog v-model="mediaDialog" title="Media library" width="720px">
+    <el-dialog v-model="mediaDialog" title="媒体库" width="720px">
       <el-form inline>
         <el-form-item>
-          <el-input v-model="mediaSearch" placeholder="Search images" clearable style="width: 220px;" @keyup.enter="loadMedia(mediaSearch)" />
+          <el-input v-model="mediaSearch" placeholder="搜索图片" clearable style="width: 220px;" @keyup.enter="loadMedia(mediaSearch)" />
         </el-form-item>
-        <el-form-item><el-button @click="loadMedia(mediaSearch)">Search</el-button></el-form-item>
+        <el-form-item><el-button @click="loadMedia(mediaSearch)">搜索</el-button></el-form-item>
         <el-form-item>
           <el-upload :show-file-list="false" :before-upload="handleUpload" accept="image/jpeg,image/png,image/webp">
-            <el-button type="primary" plain>Upload image</el-button>
+            <el-button type="primary" plain>上传图片</el-button>
           </el-upload>
         </el-form-item>
       </el-form>
@@ -195,7 +195,7 @@ async function save(status) {
           <img :src="m.url" :alt="m.original_name" loading="lazy" />
           <span>{{ m.original_name }}</span>
         </div>
-        <el-empty v-if="!mediaList.length" description="No images" />
+        <el-empty v-if="!mediaList.length" description="暂无图片" />
       </div>
     </el-dialog>
   </div>

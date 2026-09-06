@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { adminApi } from '../../api'
@@ -32,7 +32,7 @@ async function loadMedia(q) {
 async function handleUpload(file) {
   try {
     const media = await adminApi.uploadMedia(file.raw)
-    ElMessage.success('Uploaded')
+    ElMessage.success('上传成功')
     await loadMedia(mediaSearch.value)
     form.hero.image = { media_id: media.id, alt: media.original_name || '' }
     mediaDialog.value = false
@@ -42,7 +42,7 @@ async function handleUpload(file) {
   return false
 }
 
-function pickImage(media) {
+function pick图片(media) {
   form.hero.image = { media_id: media.id, alt: media.original_name || '' }
   mediaDialog.value = false
 }
@@ -59,7 +59,7 @@ onMounted(async () => {
     form.dealer_cta = h.dealer_cta || { title: '', description: '', button_label: '' }
     products.value = p.items
   } catch (e) {
-    ElMessage.error(e.response?.data?.message || 'Failed to load home config')
+    ElMessage.error(e.response?.data?.message || '首页配置加载失败')
   } finally {
     loading.value = false
   }
@@ -81,11 +81,11 @@ async function save() {
       featured_product_ids: form.featured_product_ids.map(String),
       dealer_cta: form.dealer_cta,
     })
-    ElMessage.success('Home config saved')
+    ElMessage.success('首页配置已保存')
     const h = await adminApi.getHomeConfig()
     form.version = h.version
   } catch (e) {
-    ElMessage.error(e.response?.data?.message || 'Save failed')
+    ElMessage.error(e.response?.data?.message || '保存 failed')
   } finally {
     saving.value = false
   }
@@ -95,14 +95,14 @@ async function save() {
 <template>
   <div v-loading="loading">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-      <h2 style="margin: 0; color: var(--wemove-brown-dark);">Home configuration</h2>
-      <el-button type="primary" :loading="saving" @click="save">Save</el-button>
+      <h2 style="margin: 0; color: var(--wemove-brown-dark);">首页配置</h2>
+      <el-button type="primary" :loading="saving" @click="save">保存</el-button>
     </div>
 
     <div class="admin-card">
-      <h2>Sections</h2>
+      <h2>模块设置</h2>
       <p style="color: var(--wemove-text-light); font-size: 13px; margin-top: 0;">
-        Order defines the page layout; enable or disable each module.
+        顺序决定页面布局;可启停各模块。
       </p>
       <div v-for="s in form.section_order" :key="s" class="section-row">
         <el-checkbox :model-value="form.enabled_sections.includes(s)" @change="(v) => {
@@ -115,63 +115,63 @@ async function save() {
     </div>
 
     <div class="admin-card">
-      <h2>Hero</h2>
+      <h2>首屏</h2>
       <el-form label-position="top">
-        <el-form-item label="Title"><el-input v-model="form.hero.title" /></el-form-item>
-        <el-form-item label="Subtitle"><el-input v-model="form.hero.subtitle" /></el-form-item>
-        <el-form-item label="Image">
+        <el-form-item label="标题"><el-input v-model="form.hero.title" /></el-form-item>
+        <el-form-item label="副标题"><el-input v-model="form.hero.subtitle" /></el-form-item>
+        <el-form-item label="图片">
           <div v-if="form.hero.image" style="display: flex; gap: 10px; align-items: center;">
             <img v-if="form.hero.image.url" :src="form.hero.image.url" alt="" style="width: 160px; height: 100px; object-fit: cover; border-radius: 8px;" />
             <span v-else>media #{{ form.hero.image.media_id }}</span>
-            <el-button size="small" @click="mediaDialog = true">Change</el-button>
+            <el-button size="small" @click="mediaDialog = true">更换</el-button>
           </div>
-          <el-button v-else size="small" @click="mediaDialog = true">Choose image</el-button>
+          <el-button v-else size="small" @click="mediaDialog = true">选择图片</el-button>
         </el-form-item>
         <el-row :gutter="16">
           <el-col :span="12">
-            <el-form-item label="Primary CTA label"><el-input v-model="form.hero.primary_cta.label" /></el-form-item>
+            <el-form-item label="主按钮文案"><el-input v-model="form.hero.primary_cta.label" /></el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="Primary CTA href"><el-input v-model="form.hero.primary_cta.href" placeholder="/products" /></el-form-item>
+            <el-form-item label="主按钮链接"><el-input v-model="form.hero.primary_cta.href" placeholder="/products" /></el-form-item>
           </el-col>
         </el-row>
       </el-form>
     </div>
 
     <div class="admin-card">
-      <h2>Featured products</h2>
-      <el-select v-model="form.featured_product_ids" multiple filterable placeholder="Choose active products" style="width: 100%;">
+      <h2>主推产品</h2>
+      <el-select v-model="form.featured_product_ids" multiple filterable placeholder="选择在售产品" style="width: 100%;">
         <el-option v-for="p in products" :key="p.id" :label="p.name" :value="p.id" />
       </el-select>
     </div>
 
     <div class="admin-card">
-      <h2>Dealer CTA</h2>
+      <h2>经销商入口</h2>
       <el-form label-position="top">
-        <el-form-item label="Title"><el-input v-model="form.dealer_cta.title" /></el-form-item>
-        <el-form-item label="Description"><el-input v-model="form.dealer_cta.description" type="textarea" :rows="2" /></el-form-item>
-        <el-form-item label="Button label"><el-input v-model="form.dealer_cta.button_label" /></el-form-item>
+        <el-form-item label="标题"><el-input v-model="form.dealer_cta.title" /></el-form-item>
+        <el-form-item label="说明"><el-input v-model="form.dealer_cta.description" type="textarea" :rows="2" /></el-form-item>
+        <el-form-item label="按钮文案"><el-input v-model="form.dealer_cta.button_label" /></el-form-item>
       </el-form>
     </div>
 
-    <el-dialog v-model="mediaDialog" title="Media library" width="720px">
+    <el-dialog v-model="mediaDialog" title="媒体库" width="720px">
       <el-form inline>
         <el-form-item>
-          <el-input v-model="mediaSearch" placeholder="Search images" clearable style="width: 220px;" @keyup.enter="loadMedia(mediaSearch)" />
+          <el-input v-model="mediaSearch" placeholder="搜索图片" clearable style="width: 220px;" @keyup.enter="loadMedia(mediaSearch)" />
         </el-form-item>
-        <el-form-item><el-button @click="loadMedia(mediaSearch)">Search</el-button></el-form-item>
+        <el-form-item><el-button @click="loadMedia(mediaSearch)">搜索</el-button></el-form-item>
         <el-form-item>
           <el-upload :show-file-list="false" :before-upload="handleUpload" accept="image/jpeg,image/png,image/webp">
-            <el-button type="primary" plain>Upload image</el-button>
+            <el-button type="primary" plain>上传图片</el-button>
           </el-upload>
         </el-form-item>
       </el-form>
       <div class="media-grid">
-        <div v-for="m in mediaList" :key="m.id" class="media-item" @click="pickImage(m)">
+        <div v-for="m in mediaList" :key="m.id" class="media-item" @click="pick图片(m)">
           <img :src="m.url" :alt="m.original_name" loading="lazy" />
           <span>{{ m.original_name }}</span>
         </div>
-        <el-empty v-if="!mediaList.length" description="No images" />
+        <el-empty v-if="!mediaList.length" description="暂无图片" />
       </div>
     </el-dialog>
   </div>

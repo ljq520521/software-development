@@ -17,16 +17,16 @@ onMounted(async () => {
 })
 
 const cards = [
-  { key: 'active_products', label: 'Active products', to: '/admin/products' },
-  { key: 'published_articles', label: 'Published articles', to: '/admin/content' },
-  { key: 'new_inquiries', label: 'New inquiries', to: '/admin/inquiries' },
-  { key: 'open_dealer_applications', label: 'Open dealer applications', to: '/admin/dealer-applications' },
+  { key: 'active_products', label: '在售产品', to: '/admin/products' },
+  { key: 'published_articles', label: '已发布文章', to: '/admin/content' },
+  { key: 'new_inquiries', label: '新咨询', to: '/admin/inquiries' },
+  { key: 'open_dealer_applications', label: '待处理合作申请', to: '/admin/dealer-applications' },
 ]
 </script>
 
 <template>
   <div v-loading="loading">
-    <h2 style="margin: 0 0 18px; color: var(--wemove-brown-dark);">Dashboard</h2>
+    <h2 style="margin: 0 0 18px; color: var(--wemove-brown-dark);">工作台</h2>
     <div class="stat-grid">
       <router-link v-for="c in cards" :key="c.key" :to="c.to" class="stat-card">
         <div class="stat-value">{{ data ? data[c.key] : '—' }}</div>
@@ -34,7 +34,7 @@ const cards = [
       </router-link>
     </div>
     <p v-if="data" style="color: var(--wemove-text-light); font-size: 13px;">
-      Generated at {{ formatDateTime(data.generated_at) }}
+      生成时间 {{ formatDateTime(data.generated_at) }}
     </p>
   </div>
 </template>

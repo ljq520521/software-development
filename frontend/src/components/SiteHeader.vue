@@ -8,28 +8,36 @@ onMounted(async () => {
   try {
     site.value = await api.getSite()
   } catch {
-    /* 站点设置不可用时降级为默认品牌名 */
+    /* 站点设置不可用时降级 */
   }
 })
 </script>
 
 <template>
-  <header class="site-header">
-    <div class="inner">
-      <router-link to="/" class="brand">
-        <span class="logo-mark">W</span>
-        <span>{{ site?.brand_name || 'WEMOVE SPORTS' }}</span>
-      </router-link>
-      <nav class="site-nav">
-        <router-link to="/">Home</router-link>
-        <router-link to="/products">Products</router-link>
-        <router-link to="/play">Play &amp; Learn</router-link>
-        <router-link to="/about">About</router-link>
-        <router-link to="/support">Support</router-link>
-        <router-link to="/contact">Contact</router-link>
-        <router-link to="/dealers/login" class="btn-outline" style="padding: 6px 14px; border-color: rgba(255,255,255,.5); color:#fff;">Dealer Sign In</router-link>
-        <router-link to="/dealers/apply" class="btn-outline" style="padding: 6px 14px; border-color: rgba(255,255,255,.5); color:#fff;">Become a Dealer</router-link>
-      </nav>
+  <div>
+    <div class="announcement">
+      运动玩具新系列已上线
+      <router-link to="/products">立即探索 ↗</router-link>
     </div>
-  </header>
+    <header class="site-header">
+      <div class="inner">
+        <router-link to="/" class="brand">
+          <span class="logo-mark">W</span>
+          <span>
+            {{ site?.brand_name || 'WEMOVE SPORTS' }}
+            <small>运动 · 玩乐 · 成长</small>
+          </span>
+        </router-link>
+        <nav class="site-nav">
+          <router-link to="/">首页</router-link>
+          <router-link to="/products">产品</router-link>
+          <router-link to="/play">玩乐指南</router-link>
+          <router-link to="/about">品牌故事</router-link>
+          <router-link to="/support">帮助中心</router-link>
+          <router-link to="/contact">联系我们</router-link>
+          <router-link to="/dealers/login" class="btn-nav">经销商登录</router-link>
+        </nav>
+      </div>
+    </header>
+  </div>
 </template>

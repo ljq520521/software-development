@@ -41,9 +41,9 @@ async function save() {
       privacy_version: form.privacy_version,
     })
     form.version = s.version
-    ElMessage.success('Settings saved')
+    ElMessage.success('设置已保存')
   } catch (e) {
-    ElMessage.error(e.response?.data?.message || 'Save failed')
+    ElMessage.error(e.response?.data?.message || '保存 failed')
   } finally {
     saving.value = false
   }
@@ -53,19 +53,19 @@ async function save() {
 <template>
   <div v-loading="loading">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-      <h2 style="margin: 0; color: var(--wemove-brown-dark);">Site settings</h2>
-      <el-button type="primary" :loading="saving" @click="save">Save</el-button>
+      <h2 style="margin: 0; color: var(--wemove-brown-dark);">系统设置</h2>
+      <el-button type="primary" :loading="saving" @click="save">保存</el-button>
     </div>
     <div class="admin-card" style="max-width: 640px;">
       <el-form label-position="top">
-        <el-form-item label="Brand name"><el-input v-model="form.brand_name" /></el-form-item>
-        <el-form-item label="Tagline"><el-input v-model="form.tagline" /></el-form-item>
-        <el-form-item label="Contact email"><el-input v-model="form.contact_email" /></el-form-item>
-        <el-form-item label="Contact phone"><el-input v-model="form.contact_phone" /></el-form-item>
-        <el-form-item label="Privacy version">
+        <el-form-item label="品牌名称"><el-input v-model="form.brand_name" /></el-form-item>
+        <el-form-item label="品牌标语"><el-input v-model="form.tagline" /></el-form-item>
+        <el-form-item label="联系邮箱"><el-input v-model="form.contact_email" /></el-form-item>
+        <el-form-item label="联系电话"><el-input v-model="form.contact_phone" /></el-form-item>
+        <el-form-item label="隐私版本">
           <el-input v-model="form.privacy_version" />
           <span style="font-size: 12px; color: var(--wemove-text-light);">
-            Changing this version invalidates consent on old submissions (they will return 409).
+            修改版本后,旧版本表单的同意将失效(将返回 409)。
           </span>
         </el-form-item>
       </el-form>

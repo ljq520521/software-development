@@ -28,8 +28,8 @@ onMounted(async () => {
 
 <template>
   <div class="container page-section" v-loading="loading" style="max-width: 900px;">
-    <h1 class="section-title">Support</h1>
-    <p class="section-subtitle">Frequently asked questions and support information.</p>
+    <h1 class="section-title">帮助中心</h1>
+    <p class="section-subtitle">常见问题与支持信息。</p>
 
     <el-card v-if="support" shadow="never" class="admin-card">
       <h2 style="margin-bottom: 6px;">{{ support.title }}</h2>
@@ -38,18 +38,18 @@ onMounted(async () => {
     </el-card>
 
     <el-card shadow="never" class="admin-card">
-      <h2>FAQ</h2>
+      <h2>常见问题</h2>
       <el-collapse v-if="faqs.length" accordion>
         <el-collapse-item v-for="f in faqs" :key="f.id" :name="f.id">
           <template #title><strong>{{ f.question }}</strong></template>
           <p style="white-space: pre-line; margin: 0;">{{ f.answer }}</p>
         </el-collapse-item>
       </el-collapse>
-      <el-empty v-else description="No FAQ entries." />
+      <el-empty v-else description="No 常见问题 entries." />
     </el-card>
 
     <div style="text-align: center; margin-top: 10px;">
-      <router-link to="/contact" class="btn btn-primary">Contact us</router-link>
+      <router-link to="/contact" class="btn btn-primary">联系我们</router-link>
     </div>
   </div>
 </template>

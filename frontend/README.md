@@ -1,11 +1,11 @@
 # WEMOVE SPORTS 前端(Vue 3 + Vite)
 
-WEMOVE SPORTS 官网与管理后台的 Vue 前端,对接后端 REST API(基础路径 `/api/v1`,规范见仓库 `docs/API接口文档.md` 与 `docs/openapi.json`)。
+WEMOVE SPORTS 官网与管理后台的 Vue 前端,**全中文界面**,UI 风格严格参考 www.wemovetoy.com(棕/米/沙木质感),布局语言参考项目 v1 视觉重构(双栏 Hero、编号分类带、eyebrow 标签等)。对接后端 REST API(基础路径 `/api/v1`,规范见仓库 `docs/API接口文档.md` 与 `docs/openapi.json`)。
 
 ## 技术栈
 
 - Vue 3 + Vite + Vue Router + Pinia + Axios
-- Element Plus(UI,与参考站 www.wemovetoy.com 一致)
+- Element Plus(中文语言包,与参考站 www.wemovetoy.com 一致)
 - marked(Markdown 正文渲染)
 
 ## 快速开始

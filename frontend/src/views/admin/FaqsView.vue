@@ -38,7 +38,7 @@ function openNew() {
   dialog.value = true
 }
 
-function openEdit(row) {
+function open编辑(row) {
   editing.value = row
   Object.assign(form, {
     question: row.question,
@@ -58,22 +58,22 @@ async function save() {
     } else {
       await adminApi.createFaq(form)
     }
-    ElMessage.success('Saved')
+    ElMessage.success('保存d')
     dialog.value = false
     load()
   } catch (e) {
-    ElMessage.error(e.response?.data?.message || 'Save failed')
+    ElMessage.error(e.response?.data?.message || '保存 failed')
   } finally {
     saving.value = false
   }
 }
 
-async function toggleEnabled(row) {
+async function toggle启用(row) {
   try {
     await adminApi.patchFaq(row.id, { version: row.version, enabled: !row.enabled })
     load()
   } catch (e) {
-    ElMessage.error(e.response?.data?.message || 'Update failed')
+    ElMessage.error(e.response?.data?.message || '更新失败')
   }
 }
 </script>
@@ -81,22 +81,22 @@ async function toggleEnabled(row) {
 <template>
   <div>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-      <h2 style="margin: 0; color: var(--wemove-brown-dark);">FAQ</h2>
-      <el-button type="primary" @click="openNew">New FAQ</el-button>
+      <h2 style="margin: 0; color: var(--wemove-brown-dark);">常见问题</h2>
+      <el-button type="primary" @click="openNew">New 常见问题</el-button>
     </div>
     <div class="admin-card">
       <el-table :data="items" v-loading="loading" size="small">
-        <el-table-column prop="question" label="Question" min-width="220" />
-        <el-table-column prop="group_name" label="Group" width="120" />
-        <el-table-column prop="sort_order" label="Sort" width="70" />
-        <el-table-column label="Enabled" width="100">
+        <el-table-column prop="question" label="问题" min-width="220" />
+        <el-table-column prop="group_name" label="分组" width="120" />
+        <el-table-column prop="sort_order" label="排序" width="70" />
+        <el-table-column label="启用" width="100">
           <template #default="{ row }">
-            <el-switch :model-value="row.enabled" @change="toggleEnabled(row)" />
+            <el-switch :model-value="row.enabled" @change="toggle启用(row)" />
           </template>
         </el-table-column>
         <el-table-column label="Actions" width="100" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" @click="openEdit(row)">Edit</el-button>
+            <el-button size="small" @click="open编辑(row)">编辑</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -110,17 +110,17 @@ async function toggleEnabled(row) {
       />
     </div>
 
-    <el-dialog v-model="dialog" :title="editing ? 'Edit FAQ' : 'New FAQ'" width="520px">
+    <el-dialog v-model="dialog" :title="editing ? '编辑 常见问题' : 'New 常见问题'" width="520px">
       <el-form label-position="top">
-        <el-form-item label="Question *"><el-input v-model="form.question" /></el-form-item>
-        <el-form-item label="Answer *"><el-input v-model="form.answer" type="textarea" :rows="4" /></el-form-item>
-        <el-form-item label="Group name"><el-input v-model="form.group_name" /></el-form-item>
-        <el-form-item label="Sort order"><el-input-number v-model="form.sort_order" style="width: 100%;" /></el-form-item>
-        <el-form-item label="Enabled"><el-switch v-model="form.enabled" /></el-form-item>
+        <el-form-item label="问题 *"><el-input v-model="form.question" /></el-form-item>
+        <el-form-item label="答案 *"><el-input v-model="form.answer" type="textarea" :rows="4" /></el-form-item>
+        <el-form-item label="分组 name"><el-input v-model="form.group_name" /></el-form-item>
+        <el-form-item label="排序 order"><el-input-number v-model="form.sort_order" style="width: 100%;" /></el-form-item>
+        <el-form-item label="启用"><el-switch v-model="form.enabled" /></el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialog = false">Cancel</el-button>
-        <el-button type="primary" :loading="saving" @click="save">Save</el-button>
+        <el-button @click="dialog = false">取消</el-button>
+        <el-button type="primary" :loading="saving" @click="save">保存</el-button>
       </template>
     </el-dialog>
   </div>

@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { adminApi } from '../../api'
@@ -11,9 +11,9 @@ const loading = ref(false)
 const filters = reactive({ q: '', type: '', status: '', page: 1 })
 
 const statusMeta = {
-  draft: { type: 'info', label: 'Draft' },
-  published: { type: 'success', label: 'Published' },
-  archived: { type: 'danger', label: 'Archived' },
+  draft: { type: 'info', label: '草稿' },
+  published: { type: 'success', label: '已发布' },
+  archived: { type: 'danger', label: '已归档' },
 }
 
 async function load() {
@@ -42,26 +42,26 @@ function search() {
 <template>
   <div>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-      <h2 style="margin: 0; color: var(--wemove-brown-dark);">Content (pages &amp; articles)</h2>
-      <el-button type="primary" @click="router.push('/admin/content/new')">New content</el-button>
+      <h2 style="margin: 0; color: var(--wemove-brown-dark);">内容管理(页面与文章)</h2>
+      <el-button type="primary" @click="router.push('/admin/content/new')">新增内容</el-button>
     </div>
     <div class="admin-card">
       <el-form inline>
-        <el-form-item label="Search">
-          <el-input v-model="filters.q" placeholder="Title / excerpt" clearable style="width: 200px;" @keyup.enter="search" />
+        <el-form-item label="搜索">
+          <el-input v-model="filters.q" placeholder="标题 / 摘要" clearable style="width: 200px;" @keyup.enter="search" />
         </el-form-item>
-        <el-form-item label="Type">
-          <el-select v-model="filters.type" clearable placeholder="All" style="width: 130px;">
-            <el-option label="Article" value="article" />
-            <el-option label="Page" value="page" />
+        <el-form-item label="类型">
+          <el-select v-model="filters.type" clearable placeholder="全部" style="width: 130px;">
+            <el-option label="文章" value="article" />
+            <el-option label="页面" value="page" />
           </el-select>
         </el-form-item>
         <el-form-item label="Status">
-          <el-select v-model="filters.status" clearable placeholder="All" style="width: 140px;">
+          <el-select v-model="filters.status" clearable placeholder="全部" style="width: 140px;">
             <el-option v-for="(m, k) in statusMeta" :key="k" :label="m.label" :value="k" />
           </el-select>
         </el-form-item>
-        <el-form-item><el-button type="primary" @click="search">Search</el-button></el-form-item>
+        <el-form-item><el-button type="primary" @click="search">搜索</el-button></el-form-item>
       </el-form>
       <el-table :data="items" v-loading="loading" size="small">
         <el-table-column label="" width="70">
@@ -69,20 +69,20 @@ function search() {
             <img v-if="row.cover?.[0]?.url" :src="row.cover[0].url" alt="" style="width: 46px; height: 34px; object-fit: cover; border-radius: 6px;" />
           </template>
         </el-table-column>
-        <el-table-column prop="title" label="Title" min-width="200" />
-        <el-table-column prop="type" label="Type" width="90" />
+        <el-table-column prop="title" label="标题" min-width="200" />
+        <el-table-column prop="type" label="类型" width="90" />
         <el-table-column prop="slug" label="Slug" width="150" />
         <el-table-column label="Status" width="110">
           <template #default="{ row }">
             <el-tag :type="statusMeta[row.status]?.type || 'info'" size="small">{{ statusMeta[row.status]?.label || row.status }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="Updated" width="170">
+        <el-table-column label="更新时间" width="170">
           <template #default="{ row }">{{ formatDateTime(row.updated_at) }}</template>
         </el-table-column>
         <el-table-column label="Actions" width="100" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" @click="router.push(`/admin/content/${row.id}`)">Edit</el-button>
+            <el-button size="small" @click="router.push(`/admin/content/${row.id}`)">编辑</el-button>
           </template>
         </el-table-column>
       </el-table>

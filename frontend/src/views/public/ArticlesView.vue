@@ -20,21 +20,21 @@ onMounted(async () => {
 
 <template>
   <div class="container page-section" v-loading="loading">
-    <h1 class="section-title">Play &amp; Learn</h1>
-    <p class="section-subtitle">Guides and ideas for active family play.</p>
+    <h1 class="section-title">玩乐指南</h1>
+    <p class="section-subtitle">适合家庭亲子运动的方法与灵感。</p>
     <div v-if="items.length" class="card-grid">
       <router-link v-for="a in items" :key="a.id" :to="`/play/${a.slug}`" class="product-card">
         <div class="thumb">
           <img v-if="a.cover?.[0]?.url" :src="a.cover[0].url" :alt="a.cover[0].alt" loading="lazy" />
-          <span v-else style="color:#b9b1a3;">No image</span>
+          <span v-else style="color:#b9b1a3;">暂无图片</span>
         </div>
         <div class="body">
           <div class="name">{{ a.title }}</div>
           <div class="meta">{{ formatDate(a.first_published_at) }}</div>
-          <div class="meta" style="color: var(--wemove-tan); margin-top: auto;">Read more →</div>
+          <div class="meta" style="color: var(--wemove-tan); margin-top: auto;">阅读更多 →</div>
         </div>
       </router-link>
     </div>
-    <el-empty v-else-if="!loading" description="No articles published yet." />
+    <el-empty v-else-if="!loading" description="暂无已发布文章。" />
   </div>
 </template>
