@@ -52,7 +52,7 @@ public class PageController {
   @GetMapping("/products/{slug}")
   public String product(@PathVariable String slug, Model m) {
     JsonNode p = c.product(slug);
-    base(m, p.path("seo").path("title").asText(), "products");
+    base(m, p.path("name").asText(), "products");
     m.addAttribute("description", p.path("seo").path("description").asText());
     m.addAttribute("product", map(p));
     return "product";

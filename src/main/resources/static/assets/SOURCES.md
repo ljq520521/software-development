@@ -1,31 +1,19 @@
-# WEMOVE demo imagery
+# WEMOVE 产品视觉说明
 
-These are stock illustrations of activities, not WEMOVE products, customers, or endorsements.
+本目录中的 7 张主视觉和产品图由 OpenAI ImageGen 于 2026-09-06 为本演示项目生成，随后转换为 JPEG。它们是与示例商品文案一致的产品概念视觉，不代表已量产商品、真实客户或认证结论。
 
-All five photos are licensed under the [Pexels License](https://www.pexels.com/license/). Pexels permits free website/app and promotional use, modification, and download. Attribution is optional but appreciated. Do not imply endorsement by pictured people or brands.
+| 文件 | 对应内容 | 最终生成提示摘要 |
+| --- | --- | --- |
+| `wemove-hero-play.jpg` | 首页家庭主视觉 | 北欧明亮客厅，一家人与木质保龄球、平衡石、软球和跳绳共同游戏；左侧留白；暖木色、鼠尾草绿、奶油黄和钴蓝。 |
+| `product-mini-bowling.jpg` | Mini Bowling Play Set | 6 个带彩色环的山毛榉木保龄球瓶与 1 个蓝色木球，暖白影棚产品实拍构图。 |
+| `product-balance-move.jpg` | Balance & Move Kit | 5 个防滑踏步石与 1 根跨接木质平衡梁，儿童脚部演示比例和玩法。 |
+| `product-play-ball.jpg` | Play Anywhere Ball Set | 3 个不同尺寸的软布球、4 个标志碟和 1 个帆布抽绳袋，完整组件平铺。 |
+| `product-family-bowling.jpg` | Family Bowling Challenge | 10 个木质球瓶、2 个木球和计分木片，一位家长与两名儿童共同游戏。 |
+| `product-jump-discover.jpg` | Jump & Discover Kit | 1 根棉质跳绳、6 个地垫和 4 个软跨栏，儿童跳跃展示。 |
+| `product-outdoor-adventure.jpg` | Outdoor Adventure Set | 2 个软球、6 个沙包、4 个标志碟、3 组套圈与便携袋，户外草地挑战场景。 |
 
-| Local file | Dimensions | Credit | Source |
-|---|---|---|---|
-| hero-outdoor.jpg | 1600 × 1067 | RDNE Stock project / Pexels | https://www.pexels.com/photo/a-group-of-kids-playing-jumping-rope-8034585/ |
-| outdoor-ball.jpg | 1600 × 1067 | RDNE Stock project / Pexels | https://www.pexels.com/photo/a-boy-holding-a-soccer-ball-with-his-friends-at-the-park-8033811/ |
-| bowling.jpg | 1600 × 1068 | Pavel Danilyuk / Pexels | https://www.pexels.com/photo/close-up-shot-of-three-bowling-pins-7429593/ |
-| coordination-rope.jpg | 1600 × 1067 | cottonbro studio / Pexels | https://www.pexels.com/photo/children-playing-using-a-rope-9654181/ |
-| family-play.jpg | 1600 × 2400 | Kindel Media / Pexels | https://www.pexels.com/photo/a-happy-family-playing-7977981/ |
+## 完整提示约束
 
-## Download URLs
+所有提示均指定：高端电商产品摄影、写实材质、适合儿童的合理比例、统一的北欧暖色视觉、横向构图；同时要求不出现文字、品牌标识、水印、包装及无关玩具。每张产品图都明确列出与商品描述相同的组件和数量，避免图文错配。
 
-- hero-outdoor.jpg: https://images.pexels.com/photos/8034585/pexels-photo-8034585.jpeg?auto=compress&cs=tinysrgb&w=1600
-- outdoor-ball.jpg: https://images.pexels.com/photos/8033811/pexels-photo-8033811.jpeg?auto=compress&cs=tinysrgb&w=1600
-- bowling.jpg: https://images.pexels.com/photos/7429593/pexels-photo-7429593.jpeg?auto=compress&cs=tinysrgb&w=1600
-- coordination-rope.jpg: https://images.pexels.com/photos/9654181/pexels-photo-9654181.jpeg?auto=compress&cs=tinysrgb&w=1600
-- family-play.jpg: https://images.pexels.com/photos/7977981/pexels-photo-7977981.jpeg?auto=compress&cs=tinysrgb&w=1600
-
-## Visual notes
-
-- coordination-rope.jpg is the strongest clean horizontal hero option: children jump rope on an off-white studio background, with bright yellow/red clothing and colored hoops. Central subject at about 51% x, 52% y.
-- hero-outdoor.jpg is a lively horizontal outdoor group shot, suited to an activity/brand section; it has a busier urban park background.
-- outdoor-ball.jpg is a horizontal outdoor ball category image with three children. Main ball/subject centered.
-- bowling.jpg shows three used standard bowling pins in an alley, with a dark background and orange accents. Use for category illustration only, not as a toy product photo.
-- family-play.jpg is portrait-oriented; best used in a tall family/about feature rather than a wide hero.
-
-Downloaded and visually inspected 2026-09-04. No project files changed.
+界面视觉仅参考 `wemovetoy.com` 的天然材质、大幅产品图、留白和柔和色块表达；布局、品牌图形、配色组合、卡片结构和交互均为本项目重新设计。
