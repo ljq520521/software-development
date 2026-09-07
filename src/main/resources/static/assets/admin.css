@@ -36,9 +36,22 @@
   letter-spacing: 0.1em;
   margin: 22px 12px 12px;
 }
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  position: static;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
 .sidebar a[data-route] {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
+  white-space: nowrap;
   gap: 14px;
   padding: 12px 15px;
   border-radius: 5px;
